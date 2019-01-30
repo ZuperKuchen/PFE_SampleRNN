@@ -17,5 +17,3 @@ Installation procedure:
 Run procedure:
 >- execute a "models/tier/tier.py" script with the command line described in **sampleRNN_ICLR2017/readme.md**
 >- /!\ modify the option *gpu0* by *cuda*
-
-> Written with [StackEdit](https://stackedit.io/).
