@@ -47,3 +47,11 @@ older back-end, which does not need libgpuarray.
 
 - harware info
 `$ lshw`
+
+##### probleme ssh : 
+
+This can happen when you move from one computer to another with the same .local directory. The following (from here) worked for me:
+
+First delete ~/.theano which stores some theano compiled files. Then reinstall theano via pip uninstall theano; pip install --user theano. It also fixes the gensim install for some reason (which shows the same error upon importing). Perhaps gensim imports theano when it can?
+
+
