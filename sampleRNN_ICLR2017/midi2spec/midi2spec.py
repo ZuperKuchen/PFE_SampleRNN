@@ -2,7 +2,7 @@ import midi
 import numpy as np
 import sys
 
-SAMPLE_RATE = 44100.0
+SAMPLE_RATE = 44100
 FRAME_SIZE = 1024
 
 MIDI_MIN_PITCH = 21
@@ -49,8 +49,7 @@ def midi_to_spec (midi_matrix):
     for tick in range(0, nb_ticks):
         for pitch in range(MIDI_MIN_PITCH, MIDI_MAX_PITCH):
             if midi_matrix[pitch][tick] > 0 :
-                freq_index = np.round(pitch_to_funda(pitch)*FRAME_SIZE/SAMPLE_RATE)
-                print pitch_to_funda(pitch), freq_index
+                freq_index = np.round(pitch_to_funda(pitch)*(FRAME_SIZE/2)/SAMPLE_RATE)
                 for i in range (0, frames_per_tick-1):
                     spectrum[tick * frames_per_tick + i][freq_index] = midi_matrix[pitch][tick]
                     spectrum[tick * frames_per_tick + i][FRAME_SIZE-freq_index] = midi_matrix[pitch][tick]
@@ -61,15 +60,13 @@ def midi_to_spec (midi_matrix):
 if __name__ == '__main__':
     path = sys.argv[1]
     pattern = open_midi(path)
-    #for note_event in pattern:
-    #    print (note_event.tick, note_event.pitch, note_event.velocity, pitch_to_funda(note_event.pitch))
+    
     midi_matrix = get_midi_matrix(pattern)
     spectrum = midi_to_spec(midi_matrix)
-
-    print spectrum.shape
 
     import matplotlib.pyplot as plt
 
     plt.matshow(midi_matrix, aspect='auto')
 
     plt.savefig('piano_roll.png')
+    plt.show()
