@@ -109,7 +109,7 @@ def spec_to_wav (spectrum):
         #reverse fourier transform of the frame
         data_frame = fft.ifft(frame, norm='ortho')
         #write the data as short integers
-        wav_file.writeframes(np.int16(data_frame*32767))
+        wav_file.writeframes(np.int16(np.real(data_frame)*32767))
     wav_file.close()
 
 #main
