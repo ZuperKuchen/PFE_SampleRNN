@@ -1,7 +1,6 @@
 import midi
 import numpy as np
 import numpy.fft as fft
-import sys
 import wave
 
 #Fixed the SAMPLE_RATE at twice the frequency of the max MIDI pitch
@@ -57,7 +56,7 @@ def get_piano_roll (pattern):
     for event in pattern:
         if event.pitch >= MIDI_MIN_PITCH and event.pitch <= MIDI_MAX_PITCH :
             #to take into account the end of a note event, either use the velocity 0
-            #an onset event
+            #of an onset event
             if(type(event) == midi.events.NoteOnEvent):
                 for i in range(event.tick, end_tick):
                     piano_roll[event.pitch][i] = event.velocity
@@ -114,6 +113,7 @@ def spec_to_wav (spectrum):
 
 #main
 if __name__ == '__main__':
+    import sys
     path = sys.argv[1]
 
     #open the MIDI file in the given path
