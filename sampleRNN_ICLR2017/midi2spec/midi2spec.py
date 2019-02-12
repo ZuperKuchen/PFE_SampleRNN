@@ -56,9 +56,15 @@ def get_piano_roll (pattern):
     #pitch and tick
     for event in pattern:
         if event.pitch >= MIDI_MIN_PITCH and event.pitch <= MIDI_MAX_PITCH :
-            #the offset will take care of
-            for i in range(event.tick, end_tick):
-                piano_roll[event.pitch][i] = event.velocity
+            #to take into account the end of a note event, either use the velocity 0
+            #an onset event
+            if(type(event) == midi.events.NoteOnEvent):
+                for i in range(event.tick, end_tick):
+                    piano_roll[event.pitch][i] = event.velocity
+            #or the nature of an offset event
+            if(type(event) == midi.events.NoteOffEvent):
+                for i in range(event.tick, end_tick):
+                    piano_roll[event.pitch][i] = 0
     return piano_roll
 
 #TODO : returns the number of frames per tick, according to the tempo
