@@ -8,6 +8,11 @@ DEFAULT_SAMPLE_RATE = 8372
 #DEFAULT_FRAME_SIZE has to be the same as DEFAULT_SAMPLE_RATE to accurately transcribe the frequencies
 DEFAULT_FRAME_SIZE = 8372
 
+#Tempo = microseconds per quarter note
+DEFAULT_TEMPO = 6000000.0/120.0
+#Resolution = ticks per quarter note
+DEFAULT_RESOLUTION = 480.0
+
 MIDI_MIN_PITCH = 21
 MIDI_MAX_PITCH = 108
 
@@ -22,13 +27,19 @@ def freq_to_index (freq, fs, sr):
     return int(np.round(float(fs) * freq / float(sr)))
 
 #opens a midi file and returns an array of its note on/offsets
+#also returns the duration of a tick in seconds
 def open_midi (file_name):
     notes_pattern = []
+
+    tempo = DEFAULT_TEMPO
+    resolution = DEFAULT_RESOLUTION
 
     #open the MIDI file
     pattern = midi.read_midifile(file_name)
     #it is easier to compute a piano roll if the ticks are already in absolute form
     pattern.make_ticks_abs()
+
+    resolution = pattern.resolution
 
     #browse the tracks, in case there is several
     for track in pattern:
@@ -36,7 +47,12 @@ def open_midi (file_name):
         for event in track:
             if type(event) == midi.events.NoteOnEvent or type(event) == midi.events.NoteOffEvent:
                 notes_pattern.append(event)
-    return notes_pattern
+            if type(event) == midi.events.SetTempoEvent:
+                tempo = event.get_mpqn()
+
+    microseconds_per_tick = tempo/resolution
+
+    return notes_pattern, microseconds_per_tick
 
 #returns the number of the last tick in the track (in absolute)
 def get_max_tick(pattern):
@@ -118,7 +134,12 @@ if __name__ == '__main__':
     path = sys.argv[1]
 
     #open the MIDI file in the given path
-    pattern = open_midi(path)
+    pattern, mus_per_tick = open_midi(path)
+
+    print 'Microseconds per tick = ', mus_per_tick
+
+    fs = (mus_per_tick / 6000000.0) * DEFAULT_SAMPLE_RATE
+    print 'Frame size for one tick = ', fs
 
     #create the piano roll of the track
     piano_roll = get_piano_roll(pattern)
