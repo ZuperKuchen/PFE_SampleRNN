@@ -1,3 +1,8 @@
+import numpy as np
+import numpy.fft as fft
+import librosa, librosa.display
+import matplotlib.pyplot as plt
+
 #main
 if __name__ == '__main__':
     import sys
@@ -11,16 +16,15 @@ if __name__ == '__main__':
         i = 1
         while i < len(sys.argv):
             if sys.argv[i] == '-fs':
-                frame_size = sys.argv[i+1]
+                frame_size = int(sys.argv[i+1])
                 i = i+1
             else:
                 if sys.argv[i] == '-sr':
-                    sample_rate = sys.argv[i+1]
+                    sample_rate = int(sys.argv[i+1])
                     i = i+1
                 else :
                     path = sys.argv[i]
             i = i+1
-
 
     print sample_rate
     print frame_size
@@ -30,4 +34,14 @@ if __name__ == '__main__':
     command = "timidity " + path + " -Ow -o tmp.wav"
     os.system(command)
 
-    #TODO: spectral representation stuff
+    #spectral representation of the signal
+    [signal, sample_rate] = librosa.load("tmp.wav")
+
+    fft_amp = np.abs(librosa.core.stft(signal, frame_size))
+
+    #TOREMOVE: debug display
+    #print fft_amp.shape
+    #plt.figure(figsize=(12, 8))
+    #librosa.display.specshow(fft_amp, y_axis='linear')
+    #plt.show()
+    #print sample_rate
