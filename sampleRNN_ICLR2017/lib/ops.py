@@ -276,6 +276,15 @@ def softmax_and_sample(logits):
 #       https://github.com/MaximumEntropy/cudnn_rnn_theano_benchmarks
 
 def __Recurrent(name, hidden_dims, step_fn, inputs, non_sequences=[], h0s=None):
+    #TESTING : display parameter info in hopes of understanding what is going on
+    print '_______________________'
+    print 'name :', name
+    print 'hidden_dims :', hidden_dims
+    print 'step_fn :', step_fn
+    print 'inputs :', inputs.type
+    print 'non_sequences :', non_sequences
+    print 'h0s :', h0s
+    
     if not isinstance(inputs, list):
         inputs = [inputs]
 
@@ -312,6 +321,16 @@ def __GRUStep(
         current_input,
         last_hidden,
         weightnorm=True):
+    
+    #TESTING : dimensions of the parameters
+    print '______________________'
+    print 'name :', name
+    print 'input_dim :', input_dim
+    print 'hidden_dim :', hidden_dim
+    print 'current_input :', current_input.type
+    print 'last_hidden :', last_hidden.type
+    print 'weightnorm :', weightnorm
+    
     """
     CAUTION:
         Not for stand-alone usage. It is defined here (instead of
@@ -379,6 +398,17 @@ def LowMemGRU(
         h0=None,
         mask=None,
         weightnorm=True):
+
+    #TESTING : dimensions of parameters
+    print '______________________'
+    print 'name :', name
+    print 'input_dim :', input_dim
+    print 'hidden_dim :', hidden_dim
+    print 'inputs :', inputs.type
+    print 'h0 :', h0.type
+    print 'mask :',  mask
+    print 'weighnorm :', weightnorm
+    
     """
     :todo:
         - Right now masking is not implemented and passing that arguement is
@@ -387,7 +417,6 @@ def LowMemGRU(
     :usage:
         >>> TODO
     """
-    inputs = inputs.dimshuffle(1,0,2)
 
     #if mask is None:
     #    mask =
@@ -448,6 +477,20 @@ def __LSTMStep(
         forget_bias_init=3.,
         out_bias_init=0.,
         g_bias_init=0.):
+
+    #TESTING : dimensions of the parameters
+    print '______________________'
+    print 'name :', name
+    print 'input_dim :', input_dim
+    print 'hidden_dim :', hidden_dim
+    print 'current_input :', current_input.type
+    print 'last_hidden :', last_hidden.type
+    print 'weightnorm :', weightnorm
+    print 'inp_bias_init :', inp_bias_init
+    print 'forget_bias_init :', forget_bias_init
+    print 'out_bias_init :', out_bias_init
+    print 'g_bias_init :', g_bias_init
+    
     """
     CAUTION:
         Not for stand-alone usage. It is defined here (instead of
@@ -539,6 +582,17 @@ def LowMemLSTM(
         h0=None,
         mask=None,
         weightnorm=True):
+
+    #TESTING : dimensions of parameters
+    print '______________________'
+    print 'name :', name
+    print 'input_dim :', input_dim
+    print 'hidden_dim :', hidden_dim
+    print 'inputs :', inputs.type
+    print 'h0 :', h0.type
+    print 'mask :',  mask
+    print 'weighnorm :', weightnorm
+    
     """
     Note:
         A LSTM layer is just another way to compute a hidden state. Previously,
@@ -597,6 +651,18 @@ def stackedGRU(
         h0,
         weightnorm,
         skip_conn):
+
+    #TESTING : display the dimensions of the parameters
+    print '________________________'
+    print 'name : ', name
+    print 'n_rnn : ', n_rnn
+    print 'input_dim :', input_dim
+    print 'hidden_dim :', hidden_dim
+    print 'inputs :', inputs.type
+    print 'h0 :', h0.type
+    print 'weightnorm :', weightnorm
+    print 'skip_conn :', skip_conn
+    
     """
     Note:
         Hard-coded stacked GRU. Number of GRUs should be smaller than 6.
@@ -787,6 +853,18 @@ def stackedLSTM(
         h0,
         weightnorm,
         skip_conn):
+
+    #TESTING : display the dimensions of the parameters
+    print '________________________'
+    print 'name : ', name
+    print 'n_rnn : ', n_rnn
+    print 'input_dim :', input_dim
+    print 'hidden_dim :', hidden_dim
+    print 'inputs :', inputs.type
+    print 'h0 :', h0.type
+    print 'weightnorm :', weightnorm
+    print 'skip_conn :', skip_conn
+    
     """
     Note:
         Hard-coded stacked LSTM. Number of LSTMs should be smaller than 6.
