@@ -5,5 +5,8 @@ import midi_to_tune
 #class for testing midi2tune functions
 class Midi2Tune(unittest.TestCase):
 
+  #compare return value to a mel_spec known
+  def test_compute_mel_spec(self):
+    
 if _name_ == '_main_':
   unittest.main()
