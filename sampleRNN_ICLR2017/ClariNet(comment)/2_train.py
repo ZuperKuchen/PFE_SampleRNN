@@ -71,7 +71,7 @@ test_loader = DataLoader(test_dataset, batch_size=args.batch_size, collate_fn=co
                          num_workers=args.num_workers, pin_memory=True)
 
 
-def build_model():
+def build_model(): #1 build wavenet object with arguments set in parser 
     model = Wavenet(out_channels=2,
                     num_blocks=args.num_blocks,
                     num_layers=args.num_layers,
@@ -84,7 +84,7 @@ def build_model():
     return model
 
 
-def clone_as_averaged_model(model, ema):
+def clone_as_averaged_model(model, ema):#5
     assert ema is not None
     averaged_model = build_model()
     averaged_model.to(device)
@@ -96,7 +96,7 @@ def clone_as_averaged_model(model, ema):
     return averaged_model
 
 
-def train(epoch, model, optimizer, ema):
+def train(epoch, model, optimizer, ema):#3 
     global global_step
     epoch_loss = 0.
     running_loss = 0.
@@ -146,7 +146,7 @@ def train(epoch, model, optimizer, ema):
     return epoch_loss / len(train_loader)
 
 
-def evaluate(model, ema=None):
+def evaluate(model, ema=None):#4 
     if ema is not None:
         model_ema = clone_as_averaged_model(model, ema)
     model_ema.eval()
@@ -173,7 +173,7 @@ def evaluate(model, ema=None):
     return epoch_loss
 
 
-def save_checkpoint(model, optimizer, global_step, global_epoch, ema=None):
+def save_checkpoint(model, optimizer, global_step, global_epoch, ema=None):#6
     checkpoint_path = os.path.join(args.save, args.model_name, "checkpoint_step{:09d}.pth".format(global_step))
     optimizer_state = optimizer.state_dict()
     torch.save({"state_dict": model.state_dict(),
@@ -189,7 +189,7 @@ def save_checkpoint(model, optimizer, global_step, global_epoch, ema=None):
                     "global_epoch": global_epoch}, checkpoint_path)
 
 
-def load_checkpoint(step, model, optimizer, ema=None):
+def load_checkpoint(step, model, optimizer, ema=None):#2
     global global_step
     global global_epoch
 
@@ -213,26 +213,26 @@ def load_checkpoint(step, model, optimizer, ema=None):
     return model, optimizer, ema
 
 
-model = build_model()
-model.to(device)
-
+model = build_model() #construct model 
+model.to(device) #association of model to the cpu or gpu ? 
+ 
 optimizer = optim.Adam(model.parameters(), lr=args.learning_rate)
 criterion = GaussianLoss()
 
-ema = ExponentialMovingAverage(args.ema_decay)
+ema = ExponentialMovingAverage(args.ema_decay) #Maintains moving averages of variables by employing an exponential decay.
 for name, param in model.named_parameters():
-    if param.requires_grad:
+    if param.requires_grad: #Every Tensor has a flag: requires_grad that allows for fine grained exclusion of subgraphs from gradient computation and can increase efficiency.
         ema.register(name, param.data)
 
 global_step, global_epoch = 0, 0
 load_step = args.load_step
 
 log = open(os.path.join(args.log, '{}.txt'.format(args.model_name)), 'w')
-state = {k: v for k, v in args._get_kwargs()}
+state = {k: v for k, v in args._get_kwargs()} # ? 
 
 if load_step == 0:
-    list_train_loss, list_loss = [], []
-    log.write(json.dumps(state) + '\n')
+    list_train_loss, list_loss = [], [] 
+    log.write(json.dumps(state) + '\n') 
     test_loss = 100.0
 else:
     model, optimizer, ema = load_checkpoint(load_step, model, optimizer, ema)
@@ -242,9 +242,9 @@ else:
     list_loss = list_loss[:global_epoch]
     test_loss = np.min(list_loss)
 
-for epoch in range(global_epoch + 1, args.epochs + 1):
-    training_epoch_loss = train(epoch, model, optimizer, ema)
-    with torch.no_grad():
+for epoch in range(global_epoch + 1, args.epochs + 1): #loop launch train function 
+    training_epoch_loss = train(epoch, model, optimizer, ema) 
+    with torch.no_grad(): #emporarily set all the requires_grad flag to false
         test_epoch_loss = evaluate(model, ema)
     
     state['training_loss'] = training_epoch_loss
@@ -253,11 +253,11 @@ for epoch in range(global_epoch + 1, args.epochs + 1):
     list_train_loss.append(training_epoch_loss)
     list_loss.append(test_epoch_loss)
 
-    if test_loss > test_epoch_loss:
+    if test_loss > test_epoch_loss: #if test loss better than loss for the actual epoch then save checkpoint 
         test_loss = test_epoch_loss
         save_checkpoint(model, optimizer, global_step, epoch, ema)
         print('Epoch {} Model Saved! Loss : {:.4f}'.format(epoch, test_loss))
-    np.save('{}/{}_train.npy'.format(args.loss, args.model_name), list_train_loss)
+    np.save('{}/{}_train.npy'.format(args.loss, args.model_name), list_train_loss) #store result in numpy array
     np.save('{}/{}.npy'.format(args.loss, args.model_name), list_loss)
 
     log.write('%s\n' % json.dumps(state))
