@@ -7,6 +7,8 @@ DEFAULT_TEMPO = 6000000.0/120.0
 #Resolution = ticks per quarter note
 DEFAULT_RESOLUTION = 480.0
 
+silence_threshold = 0.0001
+
 def get_mus_per_tick (pattern):
     tempo = DEFAULT_TEMPO
     resolution = DEFAULT_RESOLUTION
@@ -25,16 +27,16 @@ def get_mus_per_tick (pattern):
 def energy (frame):
     amp_sum = 0.0
     for i in range(0, len(frame)):
-        amp_sum = amp_sum + frame[i] * frame[i]
+        amp_sum = amp_sum + np.power(frame[i], 2.0)
     return float(amp_sum) / float(len(frame))
 
 def copy_x_seconds (wav_data_src, wav_data_dst, nb_seconds, sample_rate, cur_pos):
     src_eof = False
     nb_beats = 0
 
-    try :
-        data_read = wav_data_src[cur_pos : cur_pos + nb_seconds * sample_rate]
-    except IndexError:
+    data_read = wav_data_src[cur_pos : cur_pos + nb_seconds * sample_rate]
+
+    if (len(data_read) < nb_seconds  * sample_rate or energy(data_read) <= silence_threshold) :
         return True, 0, cur_pos + nb_seconds  * sample_rate
 
     wav_data_dst.extend(data_read)
@@ -68,8 +70,6 @@ if __name__ == '__main__':
         
         mid_data = midi.read_midifile(mid_path)
         mid_data.make_ticks_abs()
-        #print mid_data
-        print get_mus_per_tick (mid_data)
 
         wav_eof = False
 
@@ -86,38 +86,25 @@ if __name__ == '__main__':
 
             list_nb_beats.append (nb_beats)
             
-            keep_reading = not wav_eof
-            
-            prev_frame = wav_data[cur_pos - frame_size : cur_pos]
-            cur_frame = wav_data[cur_pos : cur_pos + frame_size]
-            next_frame = wav_data[cur_pos + frame_size : cur_pos + 2 * frame_size]
-                
-            while keep_reading:
-                if(len(next_frame) < frame_size):
-                    keep_reading = False
+            #keep_reading = not wav_eof
+            if not wav_eof:
+                next_onsets = librosa.onset.onset_detect(wav_data[cur_pos:], sr=sample_rate, hop_length=frame_size)
+                if len(next_onsets) != 0 :
+                    end_of_copy_pos = cur_pos + (next_onsets[0] - 1) * frame_size
+                    tmp_wav.extend(wav_data[cur_pos : end_of_copy_pos])
+                    cur_pos = end_of_copy_pos
+                    if (cur_pos >= len(wav_data)) :
+                        wav_eof = True
+                else :
                     wav_eof = True
-                
-                if keep_reading:
-                    if (energy(cur_frame) > energy(prev_frame) and energy(cur_frame) > energy(next_frame)):
-                        keep_reading = False
-                        print 'AAA'
-                    else:
-                        tmp_wav.extend(cur_frame)
-                        print 'BBB'
-
-                prev_frame = cur_frame
-                cur_frame = next_frame
-                next_frame = wav_data[cur_pos + frame_size : cur_pos + 2 * frame_size]
-                cur_pos = cur_pos + frame_size
-
-            librosa.output.write_wav(tmp_wav_path, np.asarray(tmp_wav), sample_rate)
+                librosa.output.write_wav(tmp_wav_path, np.asarray(tmp_wav), sample_rate)
 
             # Instantiate a MIDI Pattern (contains a list of tracks)
-            tmp_mid = midi.Pattern()
+            #tmp_mid = midi.Pattern()
             # Instantiate a MIDI Track (contains a list of MIDI events)
-            track = midi.Track()
+            #track = midi.Track()
             # Append the track to the pattern
-            tmp_mid.append(track)
+            #tmp_mid.append(track)
 
             #print "TODO : copy as many midi onsets from mid_data to tmp_mid as the nb of beats counted in the wav (don't count as a beat if the tick has already been encountered)"
             
