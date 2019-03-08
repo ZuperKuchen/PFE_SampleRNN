@@ -6,6 +6,16 @@ A Pytorch Implementation of ClariNet (Mel Spectrogram --> Waveform)
 
 PyTorch 0.4.0 & python 3.6 & Librosa
 
+# Installation
+- Install anaconda3 : https://www.anaconda.com/distribution/#download-section choose command line installer for python 3.7 then run the script and follow the instruction
+- create and set up a pytorch conda environment :
+-`$ conda create --name pytorch   
+$ source activate pytorch
+$ conda install pytorch torchvision cudatoolkit=8.0 -c pytorch
+$ conda install -c conda-forge librosa `
+
+
+
 # Examples
 
 #### Step 1. Download Dataset
@@ -18,7 +28,9 @@ PyTorch 0.4.0 & python 3.6 & Librosa
 
 #### Step 3. Train Gaussian Autoregressive WaveNet (Teacher)
 
-`python train.py --model_name wavenet_gaussian --batch_size 8 --num_blocks 4 --num_layers 6`
+`$ python train.py --model_name wavenet_gaussian --batch_size 8 --num_blocks 4 --num_layers 6
+
+`
 
 #### Step 4. Synthesize (Teacher)
 
@@ -50,7 +62,7 @@ PyTorch 0.4.0 & python 3.6 & Librosa
 
 `--temp TEMPERATURE` : Temperature (standard deviation) value implemented as z ~ N(0, 1 * TEMPERATURE)
 
-`python synthesize_student.py --model_name wavenet_gaussian_student --load_step 10000 --teacher_name wavenet_gaussian --teacher_load_step 10000 --batch_size 4 --num_blocks_t 4 --num_layers_t 6 --num_layers_s 6 --KL_type qp --num_blocks_t 4 --num_layers_t 6 --num_layers_s 6 --num_samples 5 --temp 0.7`
+`python synthesize_student.py --model_name wavenet_gaussian_student --load_step 10000 --teacher_name wavenet_gaussian --teacher_load_step 10000 --batch_size 4 --num_blocks_t 4 --num_layers_t 6 --num_layers_s 6 --num_blocks_t 4 --num_layers_t 6 --num_layers_s 6 --num_samples 5 --temp 0.7`
 
 # References
 
