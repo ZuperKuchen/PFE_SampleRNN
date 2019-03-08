@@ -36,7 +36,7 @@ def copy_x_seconds (wav_data_src, wav_data_dst, nb_seconds, sample_rate, cur_pos
 
     data_read = wav_data_src[cur_pos : cur_pos + nb_seconds * sample_rate]
 
-    if (len(data_read) < nb_seconds  * sample_rate or energy(data_read) <= silence_threshold) :
+    if (len(data_read) < nb_seconds  * sample_rate) :
         return True, 0, cur_pos + nb_seconds  * sample_rate
 
     wav_data_dst.extend(data_read)
@@ -46,6 +46,7 @@ def copy_x_seconds (wav_data_src, wav_data_dst, nb_seconds, sample_rate, cur_pos
     nb_beats = len(beats)
     
     new_cur_pos = cur_pos + nb_seconds  * sample_rate
+    
     return src_eof, nb_beats, new_cur_pos
 
 def usage ():
@@ -90,7 +91,7 @@ if __name__ == '__main__':
             if not wav_eof:
                 next_onsets = librosa.onset.onset_detect(wav_data[cur_pos:], sr=sample_rate, hop_length=frame_size)
                 if len(next_onsets) != 0 :
-                    end_of_copy_pos = cur_pos + (next_onsets[0] - 1) * frame_size
+                    end_of_copy_pos = cur_pos + (next_onsets[0] - 2) * frame_size
                     tmp_wav.extend(wav_data[cur_pos : end_of_copy_pos])
                     cur_pos = end_of_copy_pos
                     if (cur_pos >= len(wav_data)) :
