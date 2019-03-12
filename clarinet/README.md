@@ -12,8 +12,12 @@ PyTorch 0.4.0 & python 3.6 & Librosa
 -`$ conda create --name pytorch   
 $ source activate pytorch
 $ conda install pytorch torchvision cudatoolkit=8.0 -c pytorch
-$ conda install -c conda-forge librosa `
-
+$ conda install -c anaconda conda
+$ conda update -n base -c defaults conda
+$ conda install -c conda-forge librosa
+$ conda update librosa
+$ conda install -c roebel pretty_midi
+$ conda install -c roebel mido 
 
 
 # Examples
