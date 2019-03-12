@@ -6,18 +6,20 @@ import pandas as pd
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--midi_dir', '-m', type=str, default='./maestro/midi/', help='Directory where midi files are stored')
-    parser.add_argument('--wav_dir', '-w', type=str, default='./maestro/wav/', help='Directory where wav files are stored')
-    parser.add_argument('--out_dir', '-o', type=str, default='./maestro/', help='Directory where to create csv file')
+    parser = argparse.ArgumentParser(description='Preprocessing', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    parser.add_argument('--in_dir', '-i', type=str, default='./maestro/', help='Directory where dataset stored')
 
     args = parser.parse_args()
 
     midi = []
     wav = []
 
+    midi_dir = args.in_dir + 'midi/'
+    wav_dir = args.in_dir + 'wav/'
+
     #midi
-    for midi_file in os.listdir(args.midi_dir):
+    for midi_file in os.listdir(midi_dir):
         if midi_file.endswith(".mid") or midi_file.endswith(".midi"):
             (raw_name, ext) = os.path.splitext(midi_file)
 
@@ -31,4 +33,4 @@ if __name__ == "__main__":
 
     results = pd.DataFrame(data = {'midi': midi, 'wav': wav})
 
-    results.to_csv(args.out_dir + 'metadata.csv', index=False, header=False)
+    results.to_csv(args.in_dir + 'metadata.csv', index=False, header=False)

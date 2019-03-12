@@ -8,7 +8,7 @@ import argparse
 import pretty_midi
 import time
 
-def build_from_path(in_dir, out_dir, num_workers=1):
+def build_from_path(in_dir, out_dir, dataset_name, num_workers=1):
     executor = ProcessPoolExecutor(max_workers=num_workers)
     futures = []
     index = 1
@@ -20,12 +20,12 @@ def build_from_path(in_dir, out_dir, num_workers=1):
             wav_path = os.path.join(in_dir, 'wav', '%s' % parts[1])
 
             futures.append(executor.submit(
-                partial(_process_utterance, out_dir, index, wav_path, midi_path))) #modified
+                partial(_process_utterance, out_dir, index, wav_path, midi_path, dataset_name))) #modified
             index += 1
     return [future.result() for future in futures]
 
 
-def _process_utterance(out_dir, index, wav_path, midi_path):
+def _process_utterance(out_dir, index, wav_path, midi_path, dataset_name):
     # Load the audio to a numpy array:
     wav, sr = librosa.load(wav_path, sr=22050) #TODO sr = 44100 ?
 
@@ -65,9 +65,9 @@ def _process_utterance(out_dir, index, wav_path, midi_path):
     timesteps = len(out)
 
     # Write the spectrograms to disk:
-    audio_filename = 'maestro-audio-%05d.npy' % index #modified
-    mel_filename = 'maestro-mel-%05d.npy' % index #modified
-    midi_filename = 'maestro-midi-%05d.npy' % index #added
+    audio_filename = dataset_name + '-audio-%05d.npy' % index #modified
+    mel_filename = dataset_name + '-mel-%05d.npy' % index #modified
+    midi_filename = dataset_name + '-midi-%05d.npy' % index #added
 
     np.save(os.path.join(out_dir, audio_filename),
             out.astype(out_dtype), allow_pickle=False)
@@ -79,15 +79,15 @@ def _process_utterance(out_dir, index, wav_path, midi_path):
 
     midi_numpy = midi_data.get_piano_roll() #Added
     np.save(os.path.join(out_dir, midi_filename),
-            out.astype(np.float32), allow_pickle=False)
+            midi_numpy.astype(np.float32), allow_pickle=False)
 
     # Return a tuple describing this training example:
     return audio_filename, mel_filename, timesteps, midi_filename #modified
 
 
-def preprocess(in_dir, out_dir, num_workers):
+def preprocess(in_dir, out_dir, num_workers, dataset_name):
     os.makedirs(out_dir, exist_ok=True)
-    metadata = build_from_path(in_dir, out_dir, num_workers)
+    metadata = build_from_path(in_dir, out_dir, num_workers, dataset_name)
     write_metadata(metadata, out_dir)
 
 
@@ -107,13 +107,18 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Preprocessing',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--in_dir', '-i', type=str, default='./maestro/', help='In Directory')
-    parser.add_argument('--out_dir', '-o', type=str, default='./DATASETS/', help='Out Directory')
+    parser.add_argument('--out_dir', '-o', type=str, default='./DATASETS/maestro/', help='Out Directory')
+    parser.add_argument('--name', '-n', type=str, default='./DATASETS/maestro/', help='Dataset name')
+
     args = parser.parse_args()
+
+    os.makedirs(args.out_dir, exist_ok=True)
+
 
     num_workers = cpu_count()
     start = time.time()
 
-    preprocess(args.in_dir, args.out_dir, num_workers)
+    preprocess(args.in_dir, args.out_dir, args.name, num_workers)
 
     end = time.time()
     print("--- %s seconds ---" % (end - start))
