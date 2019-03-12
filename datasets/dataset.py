@@ -123,7 +123,7 @@ if __name__ == '__main__':
 
         print list_nb_beats
 
-        #MIDI separation, according to what was done for the wavs
+        #MIDI separation following the number of notes counted in each wav
         nb_subfiles = 0
         last_tick = 0
         cur_tick = 0
@@ -197,7 +197,8 @@ if __name__ == '__main__':
                 if (nb_beats_copied == nb_beats):
                     i = 1
                     look_ahead_event = src_notes_track[id_cur_event + i]
-                    while not ((type(look_ahead_event) != midi.events.EndOfTrackEvent)\
+                    while not ((type(look_ahead_event) == midi.events.NoteOnEvent\
+                                    or type(look_ahead_event) == midi.events.NoteOffEvent)\
                                    and look_ahead_event.pitch == cur_event.pitch \
                                    and look_ahead_event.velocity == 0):
                         look_ahead_event = src_notes_track[id_cur_event + i]
