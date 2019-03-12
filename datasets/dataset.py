@@ -154,9 +154,9 @@ if __name__ == '__main__':
 
             print "New subMIDI : ", nb_subfiles - 1
 
-            #main loop
+            #main MIDI segmentation loop
             while (nb_beats_copied != nb_beats):
-                appended = False
+                print nb_beats_copied, "/", nb_beats
                 cur_event = src_notes_track[id_cur_event]
                 cur_tick = cur_event.tick
 
@@ -171,24 +171,41 @@ if __name__ == '__main__':
                   if saw_first_onset:
                     cur_event.tick = cur_tick - last_tick
                     notes_track.append(cur_event)
-                    print "Appended event : ", cur_event
-                    appended = True
+                    
                     if cur_tick != last_tick\
                       and type(cur_event) == midi.events.NoteOnEvent\
                       and cur_event.velocity != 0:
                       nb_beats_copied = nb_beats_copied + 1
+
+                      look_ahead_event = src_notes_track[id_cur_event + 1]
+                      if look_ahead_event.tick == cur_tick:
+                        id_cur_event = id_cur_event + 1
+                        while look_ahead_event.tick == cur_tick:
+                          look_ahead_event.tick = cur_tick - last_tick
+                          notes_track.append(look_ahead_event)
+                          id_cur_event = id_cur_event + 1
+                          look_ahead_event = src_notes_track[id_cur_event]
+                        id_cur_event = id_cur_event - 1
+                      
                   last_tick = cur_tick
 
-                  if not appended:
-                      print "Ignored event : ", cur_event
-                                      
                 id_cur_event = id_cur_event + 1
                 if id_cur_event >= nb_note_events:
                     print "Reached end of track"
                     midi_eot = True
                     break
+                
+                if (nb_beats_copied == nb_beats):
+                    print "Completing subMIDI ", tmp_mid_path
+                    i = 1
+                    look_ahead_event = src_notes_track[id_cur_event + i]
+                    while not (look_ahead_event.pitch == cur_event.pitch \
+                                   and look_ahead_event.velocity == 0):
+                        look_ahead_event = src_notes_track[id_cur_event + i]
+                        i = i + 1
+                        last_tick = look_ahead_event.tick - cur_tick
 
-            notes_track.append(midi.EndOfTrackEvent(tick=1))
+            notes_track.append(midi.EndOfTrackEvent(tick=last_tick))
             tmp_pattern.append(notes_track)
 
             midi.write_midifile (tmp_mid_path, tmp_pattern)
