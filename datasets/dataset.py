@@ -186,7 +186,7 @@ if __name__ == '__main__':
                           look_ahead_event = src_notes_track[id_cur_event]
                         id_cur_event = id_cur_event - 1
                       
-                  last_tick = cur_tick
+                last_tick = cur_tick
 
                 id_cur_event = id_cur_event + 1
                 if id_cur_event >= nb_note_events:
