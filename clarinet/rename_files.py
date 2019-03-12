@@ -6,8 +6,8 @@ import os.path
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument('--midi_dir', '-m', type=str, default='./maestro/midi', help='Directory where midi files are stored')
-    parser.add_argument('--wav_dir', '-w', type=str, default='./maestro/wav', help='Directory where wav files are stored')
+    parser.add_argument('--midi_dir', '-m', type=str, default='./maestro/midi/', help='Directory where midi files are stored')
+    parser.add_argument('--wav_dir', '-w', type=str, default='./maestro/wav/', help='Directory where wav files are stored')
 
     args = parser.parse_args()
 
@@ -30,7 +30,7 @@ if __name__ == "__main__":
 
             #rename wav file
             os.rename(old_wav_name, new_wav_name)
-            
+
             i += 1
 
 

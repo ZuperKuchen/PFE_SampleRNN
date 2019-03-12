@@ -5,7 +5,8 @@ import os
 import librosa
 from multiprocessing import cpu_count
 import argparse
-
+import pretty_midi
+import time
 
 def build_from_path(in_dir, out_dir, num_workers=1):
     executor = ProcessPoolExecutor(max_workers=num_workers)
@@ -13,18 +14,20 @@ def build_from_path(in_dir, out_dir, num_workers=1):
     index = 1
     with open(os.path.join(in_dir, 'metadata.csv'), encoding='utf-8') as f:
         for line in f:
-            parts = line.strip().split('|')
-            wav_path = os.path.join(in_dir, 'wavs', '%s.wav' % parts[0])
-            text = parts[2]
+            parts = line.strip().split(',')
+
+            midi_path = os.path.join(in_dir, 'midi','%s' % parts[0])
+            wav_path = os.path.join(in_dir, 'wav', '%s' % parts[1])
+
             futures.append(executor.submit(
-                partial(_process_utterance, out_dir, index, wav_path, text)))
+                partial(_process_utterance, out_dir, index, wav_path, midi_path))) #modified
             index += 1
     return [future.result() for future in futures]
 
 
-def _process_utterance(out_dir, index, wav_path, text):
+def _process_utterance(out_dir, index, wav_path, midi_path):
     # Load the audio to a numpy array:
-    wav, sr = librosa.load(wav_path, sr=22050)
+    wav, sr = librosa.load(wav_path, sr=22050) #TODO sr = 44100 ?
 
     wav = wav / np.abs(wav).max() * 0.999
     out = wav
@@ -34,6 +37,7 @@ def _process_utterance(out_dir, index, wav_path, text):
     hop_length = 256
     reference = 20.0
     min_db = -100
+    #TODO compute fmax according to sr ?
 
     # Compute a mel-scale spectrogram from the trimmed wav:
     # (N, D)
@@ -61,15 +65,24 @@ def _process_utterance(out_dir, index, wav_path, text):
     timesteps = len(out)
 
     # Write the spectrograms to disk:
-    audio_filename = 'ljspeech-audio-%05d.npy' % index
-    mel_filename = 'ljspeech-mel-%05d.npy' % index
+    audio_filename = 'maestro-audio-%05d.npy' % index #modified
+    mel_filename = 'maestro-mel-%05d.npy' % index #modified
+    midi_filename = 'maestro-midi-%05d.npy' % index #added
+
     np.save(os.path.join(out_dir, audio_filename),
             out.astype(out_dtype), allow_pickle=False)
     np.save(os.path.join(out_dir, mel_filename),
             mel_spectrogram.astype(np.float32), allow_pickle=False)
 
+    ## TODO: something to the .mid file ( midi_path)? # TODO: be sure to open the corresponding midi/wav files
+    midi_data = pretty_midi.PrettyMIDI(midi_path)
+
+    midi_numpy = midi_data.get_piano_roll() #Added
+    np.save(os.path.join(out_dir, midi_filename),
+            out.astype(np.float32), allow_pickle=False)
+
     # Return a tuple describing this training example:
-    return audio_filename, mel_filename, timesteps, text
+    return audio_filename, mel_filename, timesteps, midi_filename #modified
 
 
 def preprocess(in_dir, out_dir, num_workers):
@@ -93,9 +106,14 @@ def write_metadata(metadata, out_dir):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Preprocessing',
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-    parser.add_argument('--in_dir', '-i', type=str, default='./', help='In Directory')
-    parser.add_argument('--out_dir', '-o', type=str, default='./', help='Out Directory')
+    parser.add_argument('--in_dir', '-i', type=str, default='./maestro/', help='In Directory')
+    parser.add_argument('--out_dir', '-o', type=str, default='./DATASETS/', help='Out Directory')
     args = parser.parse_args()
 
     num_workers = cpu_count()
+    start = time.time()
+
     preprocess(args.in_dir, args.out_dir, num_workers)
+
+    end = time.time()
+    print("--- %s seconds ---" % (end - start))

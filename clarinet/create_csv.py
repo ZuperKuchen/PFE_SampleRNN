@@ -7,9 +7,9 @@ import pandas as pd
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser()
-    parser.add_argument('--midi_dir', '-m', type=str, default='./maestro/midi', help='Directory where midi files are stored')
-    parser.add_argument('--wav_dir', '-w', type=str, default='./maestro/wav', help='Directory where wav files are stored')
-    parser.add_argument('--out_dir', '-o', type=str, default='./maestro', help='Directory where to create csv file')
+    parser.add_argument('--midi_dir', '-m', type=str, default='./maestro/midi/', help='Directory where midi files are stored')
+    parser.add_argument('--wav_dir', '-w', type=str, default='./maestro/wav/', help='Directory where wav files are stored')
+    parser.add_argument('--out_dir', '-o', type=str, default='./maestro/', help='Directory where to create csv file')
 
     args = parser.parse_args()
 
@@ -31,4 +31,4 @@ if __name__ == "__main__":
 
     results = pd.DataFrame(data = {'midi': midi, 'wav': wav})
 
-    results.to_csv(args.out_dir + 'metadata.csv', index=False)
+    results.to_csv(args.out_dir + 'metadata.csv', index=False, header=False)
