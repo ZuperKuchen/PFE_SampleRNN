@@ -5,7 +5,7 @@ $ source activate pytorch
 $ python3 midi2wav.py -i essen30/
 
 $ python3 create_csv.py  -i essen30/
-$ python3 preprocessing.py -i essen30/ -o DATASETS/essen30/ -n essen30
+$ python3 preprocessing.py -i essen30/ -o DATASETS/essen30/ -n essen30 #TODO: mel_spectrogram from the midi2wav wav file
 
 $ python3 train.py --model_name wavenet_gaussian --batch_size 8 --num_block 4 --num_layers 6
 

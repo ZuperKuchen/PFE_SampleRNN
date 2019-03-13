@@ -17,8 +17,7 @@ class essen30Dataset(Dataset):
         self.train = train
         self.test_size = test_size
 
-        self.paths = [self.collect_files(0), self.collect_files(1), self.collect_files(3)]
-        print("INIT DONE !")
+        self.paths = [self.collect_files(0), self.collect_files(1)] ## TODO: rmv collect_files(3) ?
 
     def __len__(self):
         return len(self.paths[0])
@@ -29,31 +28,18 @@ class essen30Dataset(Dataset):
         return wav, mel
 
     def interest_indices(self, paths):
-
-        print("entering interest_indices")
-
-
         test_num_samples = int(self.test_size * len(paths))
-        print("test_num_samples : " + str(test_num_samples))
 
         train_indices, test_indices = range(0, len(paths) - test_num_samples), \
                                       range(len(paths) - test_num_samples, len(paths))
 
-        print("train_indices: ")
-        print(train_indices)
-        print("test_indices: ")
-        print(test_indices)
         return train_indices if self.train else test_indices
 
     def collect_files(self, col):
-        print('entering collect_files(%d)' % col)
         meta = os.path.join(self.data_root, "train.txt")
         with open(meta, "rb") as f:
             lines = f.readlines()
         l = lines[0].decode("utf-8").split("|")
-
-        for i in range(len(l)):
-            print(l[i])
 
         assert len(l) == 4
 

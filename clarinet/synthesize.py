@@ -1,7 +1,7 @@
 import time
 import torch
 from torch.utils.data import Dataset, DataLoader
-from data import LJspeechDataset, collate_fn, collate_fn_synthesize
+from data import essen30Dataset, collate_fn, collate_fn_synthesize
 from wavenet import Wavenet
 import librosa
 import os
@@ -10,12 +10,13 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Train WaveNet of LJSpeech',
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('--data_path', type=str, default='./DATASETS/ljspeech/', help='Dataset Path')
-parser.add_argument('--sample_path', type=str, default='./samples', help='Sample Path')
-parser.add_argument('--save', '-s', type=str, default='./params', help='Folder to save checkpoints.')
-parser.add_argument('--load', '-l', type=str, default='./params', help='Checkpoint path to resume / test.')
-parser.add_argument('--loss', type=str, default='./loss', help='Folder to save loss')
-parser.add_argument('--log', type=str, default='./log', help='Log folder.')
+parser.add_argument('--data_path', type=str, default='./DATASETS/essen30/', help='Dataset Path')
+parser.add_argument('--sample_path', type=str, default='./samples/essen30/', help='Sample Path')
+parser.add_argument('--save', '-s', type=str, default='./params/essen30/', help='Folder to save checkpoints.')
+parser.add_argument('--load', '-l', type=str, default='./params/essen30/', help='Checkpoint path to resume / test.')
+parser.add_argument('--loss', type=str, default='./loss/essen30/', help='Folder to save loss')
+parser.add_argument('--log', type=str, default='./log/essen30/', help='Log folder.')
+
 parser.add_argument('--model_name', type=str, default='wavenet_gaussian_01', help='Model Name')
 parser.add_argument('--load_step', type=int, default=0, help='Load Step')
 
@@ -41,7 +42,10 @@ parser.add_argument('--num_workers', type=int, default=1, help='Number of worker
 args = parser.parse_args()
 
 use_cuda = torch.cuda.is_available()
+print('cuda is available: ' + str(use_cuda)) #CHANGED
 device = torch.device("cuda" if use_cuda else "cpu")
+
+
 
 if not os.path.isdir(args.sample_path):
     os.makedirs(args.sample_path)
@@ -49,13 +53,15 @@ if not os.path.isdir(os.path.join(args.sample_path, args.model_name)):
     os.makedirs(os.path.join(args.sample_path, args.model_name))
 
 # LOAD DATASETS
-train_dataset = LJspeechDataset(args.data_path, True, 0.1)
-test_dataset = LJspeechDataset(args.data_path, False, 0.1)
+train_dataset = essen30Dataset(args.data_path, True, 0.1)
+test_dataset = essen30Dataset(args.data_path, False, 0.1)
 
 train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, collate_fn=collate_fn,
                           num_workers=args.num_workers, pin_memory=True)
 test_loader = DataLoader(test_dataset, batch_size=args.batch_size, collate_fn=collate_fn_synthesize,
                          num_workers=args.num_workers, pin_memory=True)
+
+print("Train & Test Dataset Done ")
 
 
 def build_model():
@@ -102,4 +108,3 @@ for i, (x, y, c, _) in enumerate(test_loader):
         wav_name = '{}/{}/generate_{}_{}.wav'.format(args.sample_path, args.model_name, step, i)
         librosa.output.write_wav(wav_name, wav, sr=22050)
         del y_gen
-
