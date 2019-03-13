@@ -2,7 +2,7 @@ import torch
 from torch import optim
 import torch.nn as nn
 from torch.utils.data import Dataset, DataLoader
-from data import LJspeechDataset, collate_fn
+from data import essen30Dataset, collate_fn #CHANGED
 from modules import ExponentialMovingAverage, GaussianLoss
 from wavenet import Wavenet
 from torch.distributions.normal import Normal
@@ -19,12 +19,12 @@ np.set_printoptions(precision=4)
 
 parser = argparse.ArgumentParser(description='Train WaveNet of LJSpeech',
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('--data_path', type=str, default='./DATASETS/ljspeech/', help='Dataset Path')
-parser.add_argument('--sample_path', type=str, default='./samples', help='Sample Path')
-parser.add_argument('--save', '-s', type=str, default='./params', help='Folder to save checkpoints.')
-parser.add_argument('--load', '-l', type=str, default='./params', help='Checkpoint path to resume / test.')
-parser.add_argument('--loss', type=str, default='./loss', help='Folder to save loss')
-parser.add_argument('--log', type=str, default='./log', help='Log folder.')
+parser.add_argument('--data_path', type=str, default='./DATASETS/essen30/', help='Dataset Path')
+parser.add_argument('--sample_path', type=str, default='./samples/essen30/', help='Sample Path')
+parser.add_argument('--save', '-s', type=str, default='./params/essen30/', help='Folder to save checkpoints.')
+parser.add_argument('--load', '-l', type=str, default='./params/essen30', help='Checkpoint path to resume / test.')
+parser.add_argument('--loss', type=str, default='./loss/essen30', help='Folder to save loss')
+parser.add_argument('--log', type=str, default='./log/essen30', help='Log folder.')
 
 parser.add_argument('--model_name', type=str, default='wavenet_gaussian_01', help='Model Name')
 parser.add_argument('--load_step', type=int, default=0, help='Model Load Step')
@@ -60,16 +60,18 @@ if not os.path.isdir(os.path.join(args.save, args.model_name)):
     os.makedirs(os.path.join(args.save, args.model_name))
 
 use_cuda = torch.cuda.is_available()
+print('cuda is available: ' + str(use_cuda)) #CHANGED
 device = torch.device("cuda" if use_cuda else "cpu")
 
 # LOAD DATASETS
-train_dataset = LJspeechDataset(args.data_path, True, 0.1)
-test_dataset = LJspeechDataset(args.data_path, False, 0.1)
+train_dataset = essen30Dataset(args.data_path, True, 0.1)
+test_dataset = essen30Dataset(args.data_path, False, 0.1)
 train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, collate_fn=collate_fn,
                           num_workers=args.num_workers, pin_memory=True)
 test_loader = DataLoader(test_dataset, batch_size=args.batch_size, collate_fn=collate_fn,
                          num_workers=args.num_workers, pin_memory=True)
 
+print("Train & Test Dataset Done ")
 
 def build_model():
     model = Wavenet(out_channels=2,
@@ -246,7 +248,7 @@ for epoch in range(global_epoch + 1, args.epochs + 1):
     training_epoch_loss = train(epoch, model, optimizer, ema)
     with torch.no_grad():
         test_epoch_loss = evaluate(model, ema)
-    
+
     state['training_loss'] = training_epoch_loss
     state['eval_loss'] = test_epoch_loss
     state['epoch'] = epoch

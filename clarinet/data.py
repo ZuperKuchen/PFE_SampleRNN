@@ -10,15 +10,15 @@ max_time_steps = 6400
 upsample_conditional_features = True
 hop_length = 256
 
-
-class LJspeechDataset(Dataset):
+class essen30Dataset(Dataset):
     def __init__(self, data_root, train=True, test_size=0.05):
         self.data_root = data_root
         self.lengths = []
         self.train = train
         self.test_size = test_size
 
-        self.paths = [self.collect_files(0), self.collect_files(1)]
+        self.paths = [self.collect_files(0), self.collect_files(1), self.collect_files(3)]
+        print("INIT DONE !")
 
     def __len__(self):
         return len(self.paths[0])
@@ -29,20 +29,39 @@ class LJspeechDataset(Dataset):
         return wav, mel
 
     def interest_indices(self, paths):
+
+        print("entering interest_indices")
+
+
         test_num_samples = int(self.test_size * len(paths))
+        print("test_num_samples : " + str(test_num_samples))
+
         train_indices, test_indices = range(0, len(paths) - test_num_samples), \
                                       range(len(paths) - test_num_samples, len(paths))
+
+        print("train_indices: ")
+        print(train_indices)
+        print("test_indices: ")
+        print(test_indices)
         return train_indices if self.train else test_indices
 
     def collect_files(self, col):
+        print('entering collect_files(%d)' % col)
         meta = os.path.join(self.data_root, "train.txt")
         with open(meta, "rb") as f:
             lines = f.readlines()
         l = lines[0].decode("utf-8").split("|")
+
+        for i in range(len(l)):
+            print(l[i])
+
         assert len(l) == 4
+
+        #Gather num_samples of each tracks
         self.lengths = list(
             map(lambda l: int(l.decode("utf-8").split("|")[2]), lines))
 
+        #Gather paths
         paths = list(map(lambda l: l.decode("utf-8").split("|")[col], lines))
         paths = list(map(lambda f: os.path.join(self.data_root, f), paths))
 
@@ -179,4 +198,3 @@ def collate_fn_synthesize(batch):
     input_lengths = torch.tensor(input_lengths)
 
     return x_batch, y_batch, c_batch, input_lengths
-
