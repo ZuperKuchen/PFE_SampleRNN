@@ -105,6 +105,20 @@ def wav_separation (wav_path, nb_seconds, frame_size):
 
     return list_nb_beats
 
+def is_onset (event):
+    if (type(event) == midi.events.NoteOnEvent and event.velocity != 0):
+        return True
+    else:
+        return False
+
+def is_offset (event):
+    if(type(event) == midi.events.NoteOffEvent):
+        return True
+    if(type(event) == midi.events.NoteOnEvent and event.velocity == 0):
+        return True
+    else:
+        return False
+
 def midi_separation (mid_path, list_nb_beats):
     nb_subfiles = 0
     last_tick = 0
@@ -144,8 +158,7 @@ def midi_separation (mid_path, list_nb_beats):
                 or type(cur_event) == midi.events.NoteOffEvent:
 
                 if (not saw_first_onset)\
-                  and type(cur_event) == midi.events.NoteOnEvent \
-                  and cur_event.velocity != 0:
+                  and is_onset (cur_event):
                     saw_first_onset = True
 
                 if saw_first_onset:
@@ -153,8 +166,7 @@ def midi_separation (mid_path, list_nb_beats):
                     notes_track.append(cur_event)
                     
                     if (last_tick == 0 or cur_tick != last_tick)\
-                      and type(cur_event) == midi.events.NoteOnEvent\
-                      and cur_event.velocity != 0:
+                      and is_onset (cur_event):
                       nb_beats_copied = nb_beats_copied + 1
                       print nb_beats_copied, '/', nb_beats
 
@@ -179,10 +191,8 @@ def midi_separation (mid_path, list_nb_beats):
             if (nb_beats_copied == nb_beats):
                 i = 1
                 look_ahead_event = src_notes_track[id_cur_event + i]
-                while not ((type(look_ahead_event) == midi.events.NoteOnEvent\
-                                or type(look_ahead_event) == midi.events.NoteOffEvent)\
-                                and look_ahead_event.pitch == cur_event.pitch \
-                                and look_ahead_event.velocity == 0):
+                while not (is_offset (look_ahead_event)\
+                                and look_ahead_event.pitch == cur_event.pitch):
                     look_ahead_event = src_notes_track[id_cur_event + i]
                     i = i + 1
                     last_tick = look_ahead_event.tick - cur_tick
