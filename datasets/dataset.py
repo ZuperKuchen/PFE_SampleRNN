@@ -121,21 +121,20 @@ def is_offset (event):
 
 def midi_separation (mid_path, list_nb_beats):
     nb_subfiles = 0
-    last_tick = 0
     cur_tick = 0
+    eot_tick = 0
     id_cur_event = 0
     midi_eot = False
+    toggle_first_onset = False
 
     #open src MIDI file
     mid_data = midi.read_midifile(mid_path)
-    mid_data.make_ticks_abs()
-        
+
     metadata_track, src_notes_track = copy_metadata (mid_data)
 
     nb_note_events = len(src_notes_track)
-                
+
     for nb_beats in list_nb_beats :
-        last_tick = 0
         tmp_pattern = midi.Pattern()
         tmp_pattern.resolution = mid_data.resolution
         tmp_mid_path = os.path.splitext(mid_path)[0] + "_" + str(nb_subfiles) + ".mid"
@@ -149,39 +148,35 @@ def midi_separation (mid_path, list_nb_beats):
 
         saw_first_onset = False
 
-        #main MIDI segmentation loop
+        toggle_first_onset = False
+
+        #main MIDI separation loop
         while (nb_beats_copied != nb_beats):
             cur_event = src_notes_track[id_cur_event]
             cur_tick = cur_event.tick
 
             if type(cur_event) == midi.events.NoteOnEvent\
-                or type(cur_event) == midi.events.NoteOffEvent:
+              or type(cur_event) == midi.events.NoteOffEvent:
 
-                if (not saw_first_onset)\
-                  and is_onset (cur_event):
-                    saw_first_onset = True
+              if not saw_first_onset and is_onset(cur_event):
+                  saw_first_onset = True
+                  cur_event.tick = 0
+                  
+              if saw_first_onset:
+                  notes_track.append(cur_event)
 
-                if saw_first_onset:
-                    cur_event.tick = cur_tick - last_tick
-                    notes_track.append(cur_event)
-                    
-                    if (last_tick == 0 or cur_tick != last_tick)\
-                      and is_onset (cur_event):
+                  if ((toggle_first_onset == False or cur_tick != 0) and is_onset(cur_event)):
                       nb_beats_copied = nb_beats_copied + 1
-                      print nb_beats_copied, '/', nb_beats
-
+                      toggle_first_onset = True
                       look_ahead_event = src_notes_track[id_cur_event + 1]
-                      if look_ahead_event.tick == cur_tick:
-                        id_cur_event = id_cur_event + 1
-                        while look_ahead_event.tick == cur_tick:
-                          look_ahead_event.tick = 0
-                          notes_track.append(look_ahead_event)
+                      if look_ahead_event.tick == 0:
                           id_cur_event = id_cur_event + 1
-                          look_ahead_event = src_notes_track[id_cur_event]
-                        id_cur_event = id_cur_event - 1
-                      
-            last_tick = cur_tick
-
+                          while look_ahead_event.tick == 0:
+                              notes_track.append(look_ahead_event)
+                              id_cur_event = id_cur_event + 1
+                              look_ahead_event = src_notes_track[id_cur_event]
+                          id_cur_event = id_cur_event - 1
+                          
             id_cur_event = id_cur_event + 1
             if id_cur_event >= nb_note_events:
                 print "Reached end of track"
@@ -195,18 +190,18 @@ def midi_separation (mid_path, list_nb_beats):
                                 and look_ahead_event.pitch == cur_event.pitch):
                     look_ahead_event = src_notes_track[id_cur_event + i]
                     i = i + 1
-                    last_tick = look_ahead_event.tick - cur_tick
+                    eot_tick = eot_tick + look_ahead_event.tick
                     if id_cur_event + i >= len(src_notes_track):
                         break
 
-        notes_track.append(midi.EndOfTrackEvent(tick=last_tick))
+        notes_track.append(midi.EndOfTrackEvent(tick=eot_tick))
         tmp_pattern.append(notes_track)
 
         midi.write_midifile (tmp_mid_path, tmp_pattern)
 
         if midi_eot :
             break
-
+                
 def usage ():
     print "dataset.py <wav path> <number of seconds> <frame size>"
 
