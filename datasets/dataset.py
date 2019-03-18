@@ -3,11 +3,9 @@ import numpy as np
 import librosa
 
 #Tempo = microseconds per quarter note
-DEFAULT_TEMPO = 6000000.0/120.0
+DEFAULT_TEMPO = 500000.0
 #Resolution = ticks per quarter note
 DEFAULT_RESOLUTION = 480.0
-
-silence_threshold = 0.0001
 
 def get_mus_per_tick (pattern):
     tempo = DEFAULT_TEMPO
@@ -20,13 +18,8 @@ def get_mus_per_tick (pattern):
             if type(event) == midi.events.SetTempoEvent:
                 tempo = event.get_mpqn()
 
+    print tempo
     return tempo/resolution
-
-def energy (frame):
-    amp_sum = 0.0
-    for i in range(0, len(frame)):
-        amp_sum = amp_sum + np.power(frame[i], 2.0)
-    return float(amp_sum) / float(len(frame))
 
 def copy_metadata (src_mid):
     md_track = midi.Track()
@@ -72,11 +65,9 @@ def wav_separation (wav_path, nb_seconds, frame_size):
     #info on wav separation :
     #wav_eof = end of source file,
     #nb_subfiles = number of smaller wav files that were created
-    #list_nb_beats = list that keeps track of the number of beats played in each subfile
     #cur_pos = position pointer in the data of wav data
     wav_eof = False
     nb_subfiles = 0
-    list_nb_beats = []
     cur_pos = 0
 
     #wav separation
@@ -85,8 +76,6 @@ def wav_separation (wav_path, nb_seconds, frame_size):
         tmp_wav = []
             
         [wav_eof, nb_beats, cur_pos] = copy_x_seconds (wav_data, tmp_wav, nb_seconds, sample_rate, cur_pos)
-
-        list_nb_beats.append (nb_beats)
             
         #keep_reading = not wav_eof
         if not wav_eof:
@@ -103,15 +92,13 @@ def wav_separation (wav_path, nb_seconds, frame_size):
 
             nb_subfiles = nb_subfiles + 1
 
-    return list_nb_beats
-
-def is_onset (event):
+def is_noteon (event):
     if (type(event) == midi.events.NoteOnEvent and event.velocity != 0):
         return True
     else:
         return False
 
-def is_offset (event):
+def is_noteoff (event):
     if(type(event) == midi.events.NoteOffEvent):
         return True
     if(type(event) == midi.events.NoteOnEvent and event.velocity == 0):
@@ -119,88 +106,70 @@ def is_offset (event):
     else:
         return False
 
-def midi_separation (mid_path, list_nb_beats):
-    nb_subfiles = 0
-    cur_tick = 0
-    eot_tick = 0
-    id_cur_event = 0
-    midi_eot = False
-    toggle_first_onset = False
-
+def midi_separation (mid_path, nb_seconds):
     #open src MIDI file
     mid_data = midi.read_midifile(mid_path)
+    
+    mid_data.make_ticks_abs()
 
     metadata_track, src_notes_track = copy_metadata (mid_data)
 
     nb_note_events = len(src_notes_track)
 
-    for nb_beats in list_nb_beats :
+    nb_ticks_total = src_notes_track[nb_note_events - 1].tick
+
+    mus_per_tick = get_mus_per_tick (mid_data)
+    
+    print mus_per_tick
+    print nb_ticks_total
+    print mus_per_tick * nb_ticks_total
+
+    nb_subfiles = 0
+
+    midi_eot = False
+
+    last_tick = 0
+    id_cur_event = 0
+    next_timestep = 0
+    
+    while not midi_eot:
+        cur_event = src_notes_track [id_cur_event]
         tmp_pattern = midi.Pattern()
         tmp_pattern.resolution = mid_data.resolution
         tmp_mid_path = os.path.splitext(mid_path)[0] + "_" + str(nb_subfiles) + ".mid"
-        nb_subfiles = nb_subfiles + 1
-
-        tmp_pattern.append(metadata_track)
 
         notes_track = midi.Track()
 
-        nb_beats_copied = 0
+        tmp_pattern.append(metadata_track)
 
-        saw_first_onset = False
+        next_timestep = next_timestep + nb_seconds
+        
+        while (not is_noteon(cur_event)) or cur_event.tick * mus_per_tick / 1000000 <= next_timestep:
+            if cur_event.tick * mus_per_tick / 1000000 > next_timestep and not is_noteon(cur_event):
+                next_timestep = cur_event.tick * mus_per_tick / 1000000
+            print nb_subfiles, ' : ', cur_event.tick * mus_per_tick / 1000000, '/', next_timestep
 
-        toggle_first_onset = False
-
-        #main MIDI separation loop
-        while (nb_beats_copied != nb_beats):
-            cur_event = src_notes_track[id_cur_event]
+            id_cur_event = id_cur_event + 1
             cur_tick = cur_event.tick
 
-            if type(cur_event) == midi.events.NoteOnEvent\
-              or type(cur_event) == midi.events.NoteOffEvent:
+            cur_event.tick = cur_tick - last_tick
+            
+            last_tick = cur_tick
 
-              if not saw_first_onset and is_onset(cur_event):
-                  saw_first_onset = True
-                  cur_event.tick = 0
-                  
-              if saw_first_onset:
-                  notes_track.append(cur_event)
-
-                  if ((toggle_first_onset == False or cur_tick != 0) and is_onset(cur_event)):
-                      nb_beats_copied = nb_beats_copied + 1
-                      toggle_first_onset = True
-                      look_ahead_event = src_notes_track[id_cur_event + 1]
-                      if look_ahead_event.tick == 0:
-                          id_cur_event = id_cur_event + 1
-                          while look_ahead_event.tick == 0:
-                              notes_track.append(look_ahead_event)
-                              id_cur_event = id_cur_event + 1
-                              look_ahead_event = src_notes_track[id_cur_event]
-                          id_cur_event = id_cur_event - 1
-                          
-            id_cur_event = id_cur_event + 1
+            notes_track.append(cur_event)
+            
             if id_cur_event >= nb_note_events:
-                print "Reached end of track"
                 midi_eot = True
                 break
-                
-            if (nb_beats_copied == nb_beats):
-                i = 1
-                look_ahead_event = src_notes_track[id_cur_event + i]
-                while not (is_offset (look_ahead_event)\
-                                and look_ahead_event.pitch == cur_event.pitch):
-                    look_ahead_event = src_notes_track[id_cur_event + i]
-                    i = i + 1
-                    eot_tick = eot_tick + look_ahead_event.tick
-                    if id_cur_event + i >= len(src_notes_track):
-                        break
+            else:
+                cur_event = src_notes_track [id_cur_event]
 
-        notes_track.append(midi.EndOfTrackEvent(tick=eot_tick))
+        notes_track.append(midi.EndOfTrackEvent(tick=1))
         tmp_pattern.append(notes_track)
 
         midi.write_midifile (tmp_mid_path, tmp_pattern)
+        nb_subfiles = nb_subfiles + 1
 
-        if midi_eot :
-            break
                 
 def usage ():
     print "dataset.py <wav path> <number of seconds> <frame size>"
@@ -221,8 +190,7 @@ if __name__ == '__main__':
         frame_size = int(sys.argv[3])
 
         #separate the sub-wavs
-        list_nb_beats = wav_separation (wav_path, nb_seconds, frame_size)
-        print list_nb_beats
+        wav_separation (wav_path, nb_seconds, frame_size)
 
-        #MIDI separation following the number of notes counted in each wav
-        midi_separation (mid_path, list_nb_beats)
+        #separate the MIDI
+        midi_separation (mid_path, nb_seconds)
