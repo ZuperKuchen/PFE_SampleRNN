@@ -43,10 +43,12 @@ def copy_x_seconds (wav_data_src, wav_data_dst, nb_seconds, sample_rate, cur_pos
     src_eof = False
     nb_beats = 0
 
-    data_read = wav_data_src[cur_pos : cur_pos + nb_seconds * sample_rate]
+    nb_samples_offset = int(np.round(nb_seconds * sample_rate))
 
-    if (len(data_read) < nb_seconds  * sample_rate) :
-        return True, 0, cur_pos + nb_seconds  * sample_rate
+    data_read = wav_data_src[cur_pos : cur_pos + nb_samples_offset]
+
+    if (len(data_read) < nb_samples_offset) :
+        return True, 0, cur_pos + nb_samples_offset
 
     wav_data_dst.extend(data_read)
 
@@ -54,7 +56,7 @@ def copy_x_seconds (wav_data_src, wav_data_dst, nb_seconds, sample_rate, cur_pos
 
     nb_beats = len(beats)
     
-    new_cur_pos = cur_pos + nb_seconds  * sample_rate
+    new_cur_pos = cur_pos + nb_samples_offset
     
     return src_eof, nb_beats, new_cur_pos
 
@@ -170,7 +172,64 @@ def midi_separation (mid_path, nb_seconds):
         midi.write_midifile (tmp_mid_path, tmp_pattern)
         nb_subfiles = nb_subfiles + 1
 
-                
+def cut_midi_at_silence (mid_path, wav_path):
+    cumul_duration = 0.0
+    ongoing_notes = 0
+    
+    #open src MIDI file
+    mid_data = midi.read_midifile(mid_path)
+    metadata_track, src_notes_track = copy_metadata (mid_data)
+    nb_note_events = len(src_notes_track)
+    mus_per_tick = get_mus_per_tick (mid_data)
+
+    nb_subfiles = 0
+
+    tmp_pattern = midi.Pattern()
+    tmp_pattern.resolution = mid_data.resolution
+    tmp_mid_path = os.path.splitext(mid_path)[0] + "_" + str(nb_subfiles) + ".mid"
+    notes_track = midi.Track()
+    tmp_pattern.append(metadata_track)
+
+    mus_per_tick = get_mus_per_tick (mid_data)
+
+    #open src wav file
+    [wav_data, sample_rate] = librosa.load(wav_path)
+    cur_pos = 0
+    
+    for event in src_notes_track:
+        cumul_duration = cumul_duration + event.tick * mus_per_tick / 1000000.0
+
+        notes_track.append(event)
+
+        if is_noteon(event):
+            ongoing_notes = ongoing_notes + 1
+        if is_noteoff(event):
+            ongoing_notes = ongoing_notes - 1
+
+        if cumul_duration > 3.0 and ongoing_notes == 0:            
+            #finalize latest midi file
+            notes_track.append(midi.EndOfTrackEvent(tick=1))
+            tmp_pattern.append(notes_track)
+            midi.write_midifile (tmp_mid_path, tmp_pattern)
+
+            #cut the same amount of time in the wav
+            tmp_wav_path = os.path.splitext(wav_path)[0] + "_" + str(nb_subfiles) + ".wav"
+            tmp_wav = []            
+            [wav_eof, nb_beats, cur_pos] = copy_x_seconds (wav_data, tmp_wav, cumul_duration, sample_rate, cur_pos)
+            librosa.output.write_wav(tmp_wav_path, np.asarray(tmp_wav), sample_rate)
+
+            #start a new one
+            nb_subfiles = nb_subfiles + 1
+            tmp_pattern = midi.Pattern()
+            tmp_pattern.resolution = mid_data.resolution
+            tmp_mid_path = os.path.splitext(mid_path)[0] + "_" + str(nb_subfiles) + ".mid"
+            notes_track = midi.Track()
+            tmp_pattern.append(metadata_track)
+
+            #reinitialize cumulative duration
+            cumul_duration = 0.0
+
+        
 def usage ():
     print "dataset.py <wav path> <number of seconds> <frame size>"
 
@@ -182,6 +241,12 @@ if __name__ == '__main__':
     if(len(sys.argv) < 3):
         usage()
 
+    if(len(sys.argv) == 2):
+        wav_path = sys.argv[1]
+        mid_path = os.path.splitext(wav_path)[0] + ".mid"
+
+        cut_midi_at_silence (mid_path, wav_path)
+        
     else:
         wav_path = sys.argv[1]
         mid_path = os.path.splitext(wav_path)[0] + ".mid"
