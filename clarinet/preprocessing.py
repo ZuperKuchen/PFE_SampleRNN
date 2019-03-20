@@ -8,6 +8,24 @@ import argparse
 import pretty_midi
 import time
 
+def midi2wav(midi_path):
+    #remove the .mid or .midi extension
+    (filename, ext) = os.path.splitext(midi_path)
+
+    wav_name = filename + '.wav'
+
+    #use timidity to convert the MIDI to a wav equivalent
+    command = "timidity " + midi_path + " -Ow -o" + wav_name
+    os.system(command)
+
+    wav , sr = librosa.load(wav_name, sr=22050) #TODO sr = 44100 ?
+
+    command = "rm " + wav_name
+    
+    os.system(command)
+
+    return wav
+
 def build_from_path(in_dir, out_dir, dataset_name, num_workers=1):
     executor = ProcessPoolExecutor(max_workers=num_workers)
     futures = []
@@ -31,6 +49,11 @@ def _process_utterance(out_dir, index, wav_path, midi_path, dataset_name):
 
     wav = wav / np.abs(wav).max() * 0.999
     out = wav
+
+    # Load the audio from the midi to a numpy array
+    wav_midi = midi2wav(midi_path)
+    wav_midi = wav_midi / np.abs(wav_midi).max() * 0.999
+
     constant_values = 0.0
     out_dtype = np.float32
     n_fft = 1024
@@ -41,7 +64,7 @@ def _process_utterance(out_dir, index, wav_path, midi_path, dataset_name):
 
     # Compute a mel-scale spectrogram from the trimmed wav:
     # (N, D)
-    mel_spectrogram = librosa.feature.melspectrogram(wav, sr=sr, n_fft=n_fft, hop_length=hop_length, n_mels=80, fmin=125, fmax=7600).T
+    mel_spectrogram = librosa.feature.melspectrogram(wav_midi, sr=sr, n_fft=n_fft, hop_length=hop_length, n_mels=80, fmin=125, fmax=7600).T
 
     # mel_spectrogram = np.round(mel_spectrogram, decimals=2)
     mel_spectrogram = 20 * np.log10(np.maximum(1e-4, mel_spectrogram)) - reference

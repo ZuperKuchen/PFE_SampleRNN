@@ -92,7 +92,14 @@ def cut_midi_at_silence (mid_path, wav_path):
     ongoing_notes = 0
 
     #open src MIDI file
-    mid_data = midi.read_midifile (mid_path)
+    try:
+        mid_data = midi.read_midifile (mid_path)
+    except:
+        print(mid_path + " INVALID")
+        command = "rm " + wav_path + " " + mid_path
+        os.system(command)
+        return
+
     metadata_track, src_notes_track = copy_metadata (mid_data)
     nb_note_events = len (src_notes_track)
     mus_per_tick = get_mus_per_tick (mid_data)
@@ -110,7 +117,11 @@ def cut_midi_at_silence (mid_path, wav_path):
     mus_per_tick = get_mus_per_tick (mid_data)
 
     #open src wav file
-    [wav_data, sample_rate] = librosa.load (wav_path)
+    try:
+        [wav_data, sample_rate] = librosa.load (wav_path)
+    except:
+        print(wav_path + " INVALID")
+
     cur_pos = 0
 
     #in the main loop : compute the cumulative duration of the midi
@@ -165,21 +176,38 @@ def cut_midi_at_silence (mid_path, wav_path):
                             cumul_duration, sample_rate, cur_pos)
     librosa.output.write_wav (tmp_wav_path, np.asarray (tmp_wav), sample_rate)
 
+    command = "rm " + wav_path + " " + mid_path
+    os.system(command)
 
 #how to use the program
 def usage ():
-    print "dataset.py <wav path>"
+    print("dataset.py <wav dir> <midi dir>")
 
 #main
 if __name__ == '__main__' :
     import sys
     import os
 
-    if len(sys.argv) == 2 :
-        wav_path = sys.argv[1]
-        mid_path = os.path.splitext (wav_path)[0] + ".mid"
+    i = 0
+    if len(sys.argv) == 3 :
+        wav_dir = sys.argv[1]
+        mid_dir = sys.argv[2]
 
-        cut_midi_at_silence (mid_path, wav_path)
+
+        #for all midi_file
+        dir = os.listdir(mid_dir)
+        for mid in dir:
+            (filename, ext) = os.path.splitext(mid)
+
+            wav_path = wav_dir + filename + '.wav'
+            mid_path = mid_dir + mid
+            cut_midi_at_silence (mid_path, wav_path)
+
+            i += 1
+            print(i)
 
     else:
         usage ()
+
+    print(i)
+    print("%d cut midi & wav files" % i)

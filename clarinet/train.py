@@ -22,9 +22,9 @@ parser = argparse.ArgumentParser(description='Train WaveNet of LJSpeech',
 parser.add_argument('--data_path', type=str, default='./DATASETS/essen30/', help='Dataset Path')
 parser.add_argument('--sample_path', type=str, default='./samples/essen30/', help='Sample Path')
 parser.add_argument('--save', '-s', type=str, default='./params/essen30/', help='Folder to save checkpoints.')
-parser.add_argument('--load', '-l', type=str, default='./params/essen30', help='Checkpoint path to resume / test.')
-parser.add_argument('--loss', type=str, default='./loss/essen30', help='Folder to save loss')
-parser.add_argument('--log', type=str, default='./log/essen30', help='Log folder.')
+parser.add_argument('--load', '-l', type=str, default='./params/essen30/', help='Checkpoint path to resume / test.')
+parser.add_argument('--loss', type=str, default='./loss/essen30/', help='Folder to save loss')
+parser.add_argument('--log', type=str, default='./log/essen30/', help='Log folder.')
 
 parser.add_argument('--model_name', type=str, default='wavenet_gaussian_01', help='Model Name')
 parser.add_argument('--load_step', type=int, default=0, help='Model Load Step')
@@ -60,7 +60,6 @@ if not os.path.isdir(os.path.join(args.save, args.model_name)):
     os.makedirs(os.path.join(args.save, args.model_name))
 
 use_cuda = torch.cuda.is_available()
-print('cuda is available: ' + str(use_cuda)) #CHANGED
 device = torch.device("cuda" if use_cuda else "cpu")
 
 # LOAD DATASETS

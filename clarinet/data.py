@@ -17,8 +17,7 @@ class essen30Dataset(Dataset):
         self.train = train
         self.test_size = test_size
 
-        self.paths = [self.collect_files(0), self.collect_files(1)] ## TODO: rmv collect_files(3) ?
-
+        self.paths = [self.collect_files(0), self.collect_files(1)] # replace 1 by 3 to use piano_roll representation instead of mel_spectrogram
     def __len__(self):
         return len(self.paths[0])
 

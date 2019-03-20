@@ -1,7 +1,7 @@
 import time
 import torch
 from torch.utils.data import Dataset, DataLoader
-from data import LJspeechDataset, collate_fn_synthesize
+from data import essen30Dataset, collate_fn_synthesize
 from wavenet import Wavenet
 from wavenet_iaf import Wavenet_Student
 from torch.distributions.normal import Normal
@@ -12,12 +12,12 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Train WaveNet of LJSpeech',
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
-parser.add_argument('--data_path', type=str, default='./DATASETS/ljspeech/', help='Dataset Path')
-parser.add_argument('--sample_path', type=str, default='./samples', help='Sample Path')
-parser.add_argument('--save', '-s', type=str, default='./params', help='Folder to save checkpoints.')
-parser.add_argument('--load', '-l', type=str, default='./params', help='Checkpoint path to resume / test.')
-parser.add_argument('--loss', type=str, default='./loss', help='Folder to save loss')
-parser.add_argument('--log', type=str, default='./log', help='Log folder.')
+parser.add_argument('--data_path', type=str, default='./DATASETS/essen30/', help='Dataset Path')
+parser.add_argument('--sample_path', type=str, default='./samples/essen30/', help='Sample Path')
+parser.add_argument('--save', '-s', type=str, default='./params/essen30/', help='Folder to save checkpoints.')
+parser.add_argument('--load', '-l', type=str, default='./params/essen30/', help='Checkpoint path to resume / test.')
+parser.add_argument('--loss', type=str, default='./loss/essen30/', help='Folder to save loss')
+parser.add_argument('--log', type=str, default='./log/essen30/', help='Log folder.')
 
 parser.add_argument('--teacher_name', type=str, default='wavenet_gaussian_01', help='Teacher Name')
 parser.add_argument('--model_name', type=str, default='wavenet_student_gaussian_01', help='Model Name')
@@ -52,7 +52,7 @@ if not os.path.isdir(os.path.join(args.sample_path, args.teacher_name, args.mode
     os.makedirs(os.path.join(args.sample_path, args.teacher_name, args.model_name))
 
 # LOAD DATASETS
-test_dataset = LJspeechDataset(args.data_path, False, 0.1)
+test_dataset = essen30Dataset(args.data_path, False, 0.1)
 
 test_loader = DataLoader(test_dataset, batch_size=1, collate_fn=collate_fn_synthesize,
                          num_workers=args.num_workers, pin_memory=True)
@@ -126,4 +126,3 @@ for i, (x, y, c, l) in enumerate(test_loader):
                                                            args.temp)
         librosa.output.write_wav(wav_name, wav, sr=22050)
         print('{} Saved!'.format(wav_name))
-
