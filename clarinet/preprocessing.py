@@ -8,6 +8,8 @@ import argparse
 import pretty_midi
 import time
 
+# cpt = 0 #TO RM
+
 def midi2wav(midi_path):
     #remove the .mid or .midi extension
     (filename, ext) = os.path.splitext(midi_path)
@@ -15,13 +17,13 @@ def midi2wav(midi_path):
     wav_name = filename + '.wav'
 
     #use timidity to convert the MIDI to a wav equivalent
-    command = "timidity " + midi_path + " -Ow -o" + wav_name
+    command = "timidity " + midi_path + " -Ow -o" + wav_name + " > stderr"
     os.system(command)
 
     wav , sr = librosa.load(wav_name, sr=22050) #TODO sr = 44100 ?
 
     command = "rm " + wav_name
-    
+
     os.system(command)
 
     return wav
@@ -40,6 +42,8 @@ def build_from_path(in_dir, out_dir, dataset_name, num_workers=1):
             futures.append(executor.submit(
                 partial(_process_utterance, out_dir, index, wav_path, midi_path, dataset_name))) #modified
             index += 1
+    print(midi_path + " , " + wav_path)
+    print(cpt)
     return [future.result() for future in futures]
 
 
@@ -77,7 +81,16 @@ def _process_utterance(out_dir, index, wav_path, midi_path, dataset_name):
     # zero pad for quantized signal
     out = np.pad(out, (pad_l, pad_r), mode="constant", constant_values=constant_values)
     N = mel_spectrogram.shape[0]
-    assert len(out) >= N * hop_length
+    try:
+        assert len(out) >= N * hop_length
+    except:
+        except_size = N * hop_length
+        print(wav_path)
+        print(str(len(out)) + " sup or equal to %d" % except_size)
+        diff = except_size - len(out)
+        ratio = except_size / len(out)
+        print("diff: " + str(diff) + " ratio: " + str(ratio))
+        # cpt += 1
 
     # time resolution adjustment
     # ensure length of raw audio is multiple of hop_size so that we can use
