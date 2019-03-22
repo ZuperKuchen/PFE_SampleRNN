@@ -369,7 +369,7 @@ for epoch in range(global_epoch + 1, args.epochs + 1):
         test_loss = test_epoch_loss
         save_checkpoint(model_s, optimizer, global_step, epoch, ema)
         print('Epoch {} Model Saved! Loss : {:.4f}'.format(epoch, test_loss))
-        synthesize(model_t, model_s, ema)
+        # synthesize(model_t, model_s, ema)
     np.save('{}/{}_train.npy'.format(args.loss, args.model_name), list_train_loss)
     np.save('{}/{}.npy'.format(args.loss, args.model_name), list_loss)
 

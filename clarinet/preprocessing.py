@@ -8,7 +8,6 @@ import argparse
 import pretty_midi
 import time
 
-# cpt = 0 #TO RM
 
 def midi2wav(midi_path):
     #remove the .mid or .midi extension
@@ -20,7 +19,7 @@ def midi2wav(midi_path):
     command = "timidity " + midi_path + " -Ow -o" + wav_name + " > stderr"
     os.system(command)
 
-    wav , sr = librosa.load(wav_name, sr=22050) #TODO sr = 44100 ?
+    wav , sr = librosa.load(wav_name, sr=44100)
 
     command = "rm " + wav_name
 
@@ -43,20 +42,24 @@ def build_from_path(in_dir, out_dir, dataset_name, num_workers=1):
                 partial(_process_utterance, out_dir, index, wav_path, midi_path, dataset_name))) #modified
             index += 1
     print(midi_path + " , " + wav_path)
-    print(cpt)
     return [future.result() for future in futures]
 
 
 def _process_utterance(out_dir, index, wav_path, midi_path, dataset_name):
     # Load the audio to a numpy array:
-    wav, sr = librosa.load(wav_path, sr=22050) #TODO sr = 44100 ?
+    wav, sr = librosa.load(wav_path, sr=44100) #TODO sr = 44100 ?
 
-    wav = wav / np.abs(wav).max() * 0.999
-    out = wav
 
     # Load the audio from the midi to a numpy array
     wav_midi = midi2wav(midi_path)
+
+    # cutting the silence sample added by timidity
+    nb_sample2cut = len(wav_midi) - len(wav)
+    wav_midi = wav_midi[:len(wav_midi) - nb_sample2cut]
+
     wav_midi = wav_midi / np.abs(wav_midi).max() * 0.999
+    wav = wav / np.abs(wav).max() * 0.999
+    out = wav
 
     constant_values = 0.0
     out_dtype = np.float32
@@ -90,7 +93,6 @@ def _process_utterance(out_dir, index, wav_path, midi_path, dataset_name):
         diff = except_size - len(out)
         ratio = except_size / len(out)
         print("diff: " + str(diff) + " ratio: " + str(ratio))
-        # cpt += 1
 
     # time resolution adjustment
     # ensure length of raw audio is multiple of hop_size so that we can use
