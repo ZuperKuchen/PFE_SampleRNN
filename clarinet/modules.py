@@ -5,6 +5,7 @@ from loss import gaussian_loss, KL_gaussians
 import numpy as np
 import math
 
+# this code is taken from: https://github.com/ksw0306/ClariNet.git
 
 class Conv(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, dilation=1, causal=False, mode='SAME'):

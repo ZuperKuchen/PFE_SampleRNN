@@ -3,6 +3,7 @@ from torch.utils.data import Dataset
 import numpy as np
 import os
 
+# this code is taken from: https://github.com/ksw0306/ClariNet.git
 
 use_cuda = torch.cuda.is_available()
 

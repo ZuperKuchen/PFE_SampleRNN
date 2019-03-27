@@ -14,8 +14,10 @@ import json
 import time
 import gc
 
-torch.backends.cudnn.benchmark = True
-np.set_printoptions(precision=4)
+# this code is adapted from: https://github.com/ksw0306/ClariNet.git
+
+torch.backends.cudnn.benchmark = True #enable the inbuilt cudnn auto-tuner to find the best algorithm to use for your hardware. = faster runtime 
+np.set_printoptions(precision=4) #Set printing options. Number of digits of precision for floating point output 
 
 parser = argparse.ArgumentParser(description='Train WaveNet of LJSpeech',
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)
@@ -59,11 +61,12 @@ if not os.path.isdir(args.sample_path):
 if not os.path.isdir(os.path.join(args.save, args.model_name)):
     os.makedirs(os.path.join(args.save, args.model_name))
 
-use_cuda = torch.cuda.is_available()
-device = torch.device("cuda" if use_cuda else "cpu")
+use_cuda = torch.cuda.is_available() #Returns a bool indicating if CUDA is currently available.
+device = torch.device("cuda" if use_cuda else "cpu") #A torch.device is an object representing the device on which a torch.Tensor is or will be allocated.
+
 
 # LOAD DATASETS
-train_dataset = essen30Dataset(args.data_path, True, 0.1)
+train_dataset = essen30Dataset(args.data_path, True, 0.1) 
 test_dataset = essen30Dataset(args.data_path, False, 0.1)
 
 train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, collate_fn=collate_fn,
@@ -73,7 +76,7 @@ test_loader = DataLoader(test_dataset, batch_size=args.batch_size, collate_fn=co
 
 print("Train & Test Dataset Done ")
 
-def build_model():
+def build_model(): #build wavenet object with arguments set in parser 
     model = Wavenet(out_channels=2,
                     num_blocks=args.num_blocks,
                     num_layers=args.num_layers,
@@ -221,9 +224,9 @@ model.to(device)
 optimizer = optim.Adam(model.parameters(), lr=args.learning_rate)
 criterion = GaussianLoss()
 
-ema = ExponentialMovingAverage(args.ema_decay)
+ema = ExponentialMovingAverage(args.ema_decay) #Maintains moving averages of variables by employing an exponential decay.
 for name, param in model.named_parameters():
-    if param.requires_grad:
+    if param.requires_grad: #Every Tensor has a flag: requires_grad that allows for fine grained exclusion of subgraphs from gradient computation and can increase efficiency.
         ema.register(name, param.data)
 
 global_step, global_epoch = 0, 0
@@ -244,9 +247,9 @@ else:
     list_loss = list_loss[:global_epoch]
     test_loss = np.min(list_loss)
 
-for epoch in range(global_epoch + 1, args.epochs + 1):
+for epoch in range(global_epoch + 1, args.epochs + 1):  #loop launch train function 
     training_epoch_loss = train(epoch, model, optimizer, ema)
-    with torch.no_grad():
+    with torch.no_grad(): #temporarily set all the requires_grad flag to false
         test_epoch_loss = evaluate(model, ema)
 
     state['training_loss'] = training_epoch_loss

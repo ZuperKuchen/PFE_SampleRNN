@@ -7,6 +7,7 @@ import librosa
 import os
 import argparse
 
+# this code is taken from: https://github.com/ksw0306/ClariNet.git
 
 parser = argparse.ArgumentParser(description='Train WaveNet of LJSpeech',
                                  formatter_class=argparse.ArgumentDefaultsHelpFormatter)

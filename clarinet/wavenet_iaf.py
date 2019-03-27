@@ -3,6 +3,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 from modules import Conv, ResBlock
 
+# this code is taken from: https://github.com/ksw0306/ClariNet.git
 
 class Wavenet_Student(nn.Module):
     def __init__(self, num_blocks_student=[1, 1, 1, 4], num_layers=6,

@@ -3,7 +3,7 @@ import argparse
 from mido import MidiFile
 import shutil as sh
 
-
+#script that sort midi depending on the length of the midi track. This allows to get dataset with tracks of a length inferior to 30 seconds for example.
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Preprocessing', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
