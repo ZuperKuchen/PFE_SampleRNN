@@ -146,7 +146,7 @@ if __name__ == "__main__":
                                      formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     parser.add_argument('--in_dir', '-i', type=str, default='./maestro/', help='In Directory')
     parser.add_argument('--out_dir', '-o', type=str, default='./DATASETS/maestro/', help='Out Directory')
-    parser.add_argument('--name', '-n', type=str, default='./DATASETS/maestro/', help='Dataset name')
+    parser.add_argument('--name', '-n', type=str, default='maestro', help='Dataset name')
 
     args = parser.parse_args()
 
