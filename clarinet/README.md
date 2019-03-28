@@ -18,9 +18,13 @@ Original code from [Sungwon Kim](https://github.com/ksw0306) --> [HERE](https://
 # Installation
 - Install anaconda3 : https://www.anaconda.com/distribution/#download-section choose command line installer for python 3.7 then run the script and follow the instructions
 - create and set up a pytorch conda environment :
--`$ conda create --name pytorch   
+
+`$ conda create --name pytorch   
+
 $ source activate pytorch
+
 $ conda install pytorch torchvision cudatoolkit=8.0 -c pytorch
+
 $ conda install -c anaconda conda
 $ conda update -n base -c defaults conda
 $ conda install -c conda-forge librosa
