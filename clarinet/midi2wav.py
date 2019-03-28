@@ -1,6 +1,8 @@
 import os
 import argparse
 
+#this script permit to transform a midi file to a wav file using timidity librairy.
+
 if __name__ == "__main__":
 
     parser = argparse.ArgumentParser(description='Preprocessing', formatter_class=argparse.ArgumentDefaultsHelpFormatter)

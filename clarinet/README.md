@@ -4,7 +4,14 @@ A Pytorch Implementation of ClariNet (Mel Spectrogram --> Waveform)
 
 # Requirements
 
-PyTorch 0.4.0 & python 3.6 & Librosa
+PyTorch                       0.4.0
+Python                        3.6 
+Librosa                       0.6.3
+anaconda                      2018.12                  
+pretty_midi                   0.2.8
+mido			      1.2.8
+matplotlib                    2.2.3  
+py-midi                       1.2.5    
 
 # Installation
 - Install anaconda3 : https://www.anaconda.com/distribution/#download-section choose command line installer for python 3.7 then run the script and follow the instruction

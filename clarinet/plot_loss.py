@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import math
 
+#script to plot loss of teacher or student train result
 if __name__ == "__main__":
 	dir = "loss/maestro_02/"
 

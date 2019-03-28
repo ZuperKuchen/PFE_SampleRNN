@@ -2,6 +2,8 @@ import midi
 import numpy as np
 import librosa
 
+#this file permit to cut midi and wav track of a dataset to shorter tracks, the two output files are synchronized.
+
 #Tempo = microseconds per quarter note
 DEFAULT_TEMPO = 500000.0
 #Resolution = ticks per quarter note

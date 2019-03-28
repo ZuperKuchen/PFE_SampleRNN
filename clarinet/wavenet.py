@@ -3,6 +3,7 @@ from torch import nn
 from modules import Conv, ResBlock
 from loss import sample_from_gaussian
 
+# this code is taken from: https://github.com/ksw0306/ClariNet.git
 
 class Wavenet(nn.Module):
     def __init__(self, out_channels=1, num_blocks=3, num_layers=10,

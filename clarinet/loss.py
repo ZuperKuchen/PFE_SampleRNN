@@ -2,6 +2,7 @@ import math
 import torch
 from torch.distributions.normal import Normal
 
+# this code is taken from: https://github.com/ksw0306/ClariNet.git
 
 def gaussian_loss(y_hat, y, log_std_min=-7.0):
     assert y_hat.dim() == 3

@@ -3,6 +3,7 @@ import numpy as np
 import os
 import os.path
 
+#this script rename files at format "track[number].midi" and "track[number].wav" 
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()

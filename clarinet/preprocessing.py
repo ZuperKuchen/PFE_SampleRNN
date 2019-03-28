@@ -8,6 +8,9 @@ import argparse
 import pretty_midi
 import time
 
+# this code is adapted from: https://github.com/ksw0306/ClariNet.git
+#create mel spectrogram and convert midi and wav files from the dataset to numpy array.
+
 
 def midi2wav(midi_path):
     #remove the .mid or .midi extension
@@ -27,7 +30,7 @@ def midi2wav(midi_path):
 
     return wav
 
-def build_from_path(in_dir, out_dir, dataset_name, num_workers=1):
+def build_from_path(in_dir, out_dir, dataset_name, num_workers=1): #split metadata files, launch process utterance function with wav path and corresponding text, return sum of append.
     executor = ProcessPoolExecutor(max_workers=num_workers)
     futures = []
     index = 1
@@ -45,7 +48,7 @@ def build_from_path(in_dir, out_dir, dataset_name, num_workers=1):
     return [future.result() for future in futures]
 
 
-def _process_utterance(out_dir, index, wav_path, midi_path, dataset_name):
+def _process_utterance(out_dir, index, wav_path, midi_path, dataset_name): #compute mel spectrogram for corresponding wav, do something after ?, write spectrogram and return audio_filename, mel_filename, timesteps, text. 
     # Load the audio to a numpy array:
     wav, sr = librosa.load(wav_path, sr=44100) #TODO sr = 44100 ?
 
@@ -123,13 +126,13 @@ def _process_utterance(out_dir, index, wav_path, midi_path, dataset_name):
     return audio_filename, mel_filename, timesteps, midi_filename #modified
 
 
-def preprocess(in_dir, out_dir, num_workers, dataset_name):
+def preprocess(in_dir, out_dir, num_workers, dataset_name): #recursive directory creation function + launch buid from path function + launch write metadata function to write in out dir
     os.makedirs(out_dir, exist_ok=True)
     metadata = build_from_path(in_dir, out_dir, num_workers, dataset_name)
     write_metadata(metadata, out_dir)
 
 
-def write_metadata(metadata, out_dir):
+def write_metadata(metadata, out_dir): # write metadata result in file + print informations
     with open(os.path.join(out_dir, 'train.txt'), 'w', encoding='utf-8') as f:
         for m in metadata:
             f.write('|'.join([str(x) for x in m]) + '\n')

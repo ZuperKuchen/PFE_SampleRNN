@@ -15,6 +15,8 @@ import json
 import time
 import gc
 
+# this code is taken from: https://github.com/ksw0306/ClariNet.git
+
 torch.backends.cudnn.benchmark = True
 np.set_printoptions(precision=4)
 
