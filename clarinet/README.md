@@ -1,7 +1,7 @@
 # ClariNet
 A Pytorch Implementation of ClariNet (Mel Spectrogram --> Waveform)
 
-Original code from [Sungwon Kim](https://github.com/ksw0306) --> [](https://github.com/ksw0306/ClariNet)
+Original code from [Sungwon Kim](https://github.com/ksw0306) --> [HERE](https://github.com/ksw0306/ClariNet)
 
 
 # Requirements
