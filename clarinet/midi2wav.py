@@ -1,13 +1,15 @@
 import os
 import argparse
 
-#this script permit to transform a midi file to a wav file using timidity librairy.
-#to use if only midi dataset.
+#This script transforms a MIDI file to a wav file using the timidity library.
+#To use if only dataset is only MIDI.
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description='Preprocessing', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description='Preprocessing', \
+            formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('--in_dir', '-i', type=str, default='./essen30/', help='In Directory')
+    parser.add_argument('--in_dir', '-i', type=str, default='./essen30/',\
+            help='In Directory')
 
     args = parser.parse_args()
 
@@ -21,12 +23,12 @@ if __name__ == "__main__":
     i = 0
     for midi in os.listdir(midi_path):
 
-        #remove the .mid or .midi extension
+        #Remove the .mid or .midi extension
         (filename, ext) = os.path.splitext(midi)
 
         wav_name = filename + '.wav'
 
-        #use timidity to convert the MIDI to a wav equivalent
+        #Use timidity to convert the MIDI to a wav equivalent
         command = "timidity " + midi_path + midi + " -Ow -o" + wav_path + wav_name
         os.system(command)
         i +=1

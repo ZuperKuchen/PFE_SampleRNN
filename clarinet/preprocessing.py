@@ -9,7 +9,7 @@ import pretty_midi
 import time
 
 # this code is adapted from: https://github.com/ksw0306/ClariNet.git
-#create mel spectrogram and convert midi and wav files from the dataset to numpy array.
+#create mel spectrogram and convert MIDI and wav files in the dataset to numpy array.
 
 def midi2wav(midi_path):
     #remove the .mid or .midi extension
@@ -29,7 +29,9 @@ def midi2wav(midi_path):
 
     return wav
 
-def build_from_path(in_dir, out_dir, dataset_name, num_workers=1): #split metadata files, launch process utterance function with wav path and corresponding text, return sum of append.
+#split metadata files, launch process utterance function with wav path
+#and corresponding text, return sum of append.
+def build_from_path(in_dir, out_dir, dataset_name, num_workers=1):
     executor = ProcessPoolExecutor(max_workers=num_workers)
     futures = []
     index = 1
@@ -45,8 +47,9 @@ def build_from_path(in_dir, out_dir, dataset_name, num_workers=1): #split metada
             index += 1
     return [future.result() for future in futures]
 
-
-def _process_utterance(out_dir, index, wav_path, midi_path, dataset_name): #compute mel spectrogram for corresponding wav, do something after ?, write spectrogram and return audio_filename, mel_filename, timesteps, text.
+#compute mel spectrogram for corresponding wav
+#write spectrogram and return audio_filename, mel_filename, timesteps, text.
+def _process_utterance(out_dir, index, wav_path, midi_path, dataset_name):
     # Load the audio to a numpy array:
     wav, sr = librosa.load(wav_path, sr=44100)
 
@@ -71,7 +74,8 @@ def _process_utterance(out_dir, index, wav_path, midi_path, dataset_name): #comp
 
     # Compute a mel-scale spectrogram from the trimmed wav:
     # (N, D)
-    mel_spectrogram = librosa.feature.melspectrogram(wav_midi, sr=sr, n_fft=n_fft, hop_length=hop_length, n_mels=80, fmin=125, fmax=7600).T
+    mel_spectrogram = librosa.feature.melspectrogram(wav_midi, sr=sr, n_fft=n_fft,\
+                        hop_length=hop_length, n_mels=80, fmin=125, fmax=7600).T
 
     # mel_spectrogram = np.round(mel_spectrogram, decimals=2)
     mel_spectrogram = 20 * np.log10(np.maximum(1e-4, mel_spectrogram)) - reference
@@ -121,14 +125,15 @@ def _process_utterance(out_dir, index, wav_path, midi_path, dataset_name): #comp
     # Return a tuple describing this training example:
     return audio_filename, mel_filename, timesteps, midi_filename #modified
 
-
-def preprocess(in_dir, out_dir, num_workers, dataset_name): #recursive directory creation function + launch buid from path function + launch write metadata function to write in out dir
+#recursive directory creation function + launch buid from path function
+# + launch write metadata function to write in out dir
+def preprocess(in_dir, out_dir, num_workers, dataset_name):
     os.makedirs(out_dir, exist_ok=True)
     metadata = build_from_path(in_dir, out_dir, num_workers, dataset_name)
     write_metadata(metadata, out_dir)
 
-
-def write_metadata(metadata, out_dir): # write metadata result in file + print informations
+# write metadata result in file + print informations
+def write_metadata(metadata, out_dir):
     with open(os.path.join(out_dir, 'train.txt'), 'w', encoding='utf-8') as f:
         for m in metadata:
             f.write('|'.join([str(x) for x in m]) + '\n')

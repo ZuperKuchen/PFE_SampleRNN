@@ -3,13 +3,16 @@ import numpy as np
 import os
 import pandas as pd
 
-#this script create a csv file corresponding to the data linked in. The format is one column for midi, one column for wav.
+#This script creates a csv file corresponding to the data linked in.
+#The format is one column for midi, one column for wav.
 
 if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser(description='Preprocessing', formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+    parser = argparse.ArgumentParser(description='Preprocessing',\
+     formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
-    parser.add_argument('--in_dir', '-i', type=str, default='./maestro/', help='Directory where dataset stored')
+    parser.add_argument('--in_dir', '-i', type=str, default='./maestro/',\
+     help='Directory where dataset stored')
 
     args = parser.parse_args()
 

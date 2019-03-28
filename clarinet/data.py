@@ -18,7 +18,8 @@ class essen30Dataset(Dataset):
         self.train = train
         self.test_size = test_size
 
-        self.paths = [self.collect_files(0), self.collect_files(1)] # replace 1 by 3 to use piano_roll representation instead of mel_spectrogram
+        self.paths = [self.collect_files(0), self.collect_files(1)]
+        #Replace 1 by 3 to use piano_roll representation instead of mel_spectrogram
     def __len__(self):
         return len(self.paths[0])
 
@@ -88,7 +89,8 @@ def collate_fn(batch):
             if upsample_conditional_features:
                 assert len(x) % len(c) == 0 and len(x) // len(c) == hop_length
 
-                max_steps = max_time_steps - max_time_steps % hop_length   # To ensure Divisibility
+                max_steps = max_time_steps - max_time_steps % hop_length
+                # To ensure Divisibility
 
                 if len(x) > max_steps:
                     max_time_frames = max_steps // hop_length
