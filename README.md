@@ -8,7 +8,7 @@ Supervised by Pierre HANNA
 
 ## GOAL
 
-This project aims to adapt the implementation of [ClariNet](https://arxiv.org/pdf/1807.07281.pdf) by [Sungwon Kim](https://github.com/ksw0306/ClariNet), an end-to-end TTS architecture, to midi interpretation.
+This project aims to adapt the implementation of [ClariNet](https://arxiv.org/pdf/1807.07281.pdf) by [Sungwon Kim](https://github.com/ksw0306/ClariNet), an end-to-end TTS architecture, to MIDI interpretation.
 
 
 ### References
