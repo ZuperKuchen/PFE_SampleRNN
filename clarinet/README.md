@@ -1,7 +1,7 @@
 # ClariNet
 A Pytorch Implementation of ClariNet (Mel Spectrogram --> Waveform)
 
-Original code from [Sungwon Kim](https://github.com/ksw0306) --> [ClariNet](https://github.com/ksw0306/ClariNet)
+Original code from [Sungwon Kim](https://github.com/ksw0306) --> [](https://github.com/ksw0306/ClariNet)
 
 
 # Requirements
@@ -83,4 +83,4 @@ $ conda install -c roebel mido `
 
 
 - ClariNet : [https://arxiv.org/abs/1807.07281](https://arxiv.org/abs/1807.07281)
-- Clarinet implementation : [https://github.com/ksw0306/ClariNet]
+- ClariNet implementation : [https://github.com/ksw0306/ClariNet]
