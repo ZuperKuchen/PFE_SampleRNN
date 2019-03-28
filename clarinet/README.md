@@ -19,18 +19,23 @@ Original code from [Sungwon Kim](https://github.com/ksw0306) --> [HERE](https://
 - Install anaconda3 : https://www.anaconda.com/distribution/#download-section choose command line installer for python 3.7 then run the script and follow the instructions
 - create and set up a pytorch conda environment :
 
-`$ conda create --name pytorch   
+`conda create --name pytorch`   
 
-$ source activate pytorch
+`source activate pytorch`
 
-$ conda install pytorch torchvision cudatoolkit=8.0 -c pytorch
+`conda install pytorch torchvision cudatoolkit=8.0 -c pytorch`
 
-$ conda install -c anaconda conda
-$ conda update -n base -c defaults conda
-$ conda install -c conda-forge librosa
-$ conda update librosa
-$ conda install -c roebel pretty_midi
-$ conda install -c roebel mido `
+`conda install -c anaconda conda`
+
+`conda update -n base -c defaults conda`
+
+`conda install -c conda-forge librosa`
+
+`conda update librosa`
+
+`conda install -c roebel pretty_midi`
+
+`conda install -c roebel mido `
 
 
 # Examples (with maestro_bach dataset)
@@ -62,8 +67,6 @@ $ conda install -c roebel mido `
 `--teacher_load_step CHECKPOINT` : the # of the pre-trained *teacher* model's global training step (also depicted in the trained weight file)
 
 `--KL_type qp` : Reversed KL divegence KL(q||p)  or `--KL_type pq` : Forward KL divergence KL(p||q)
-
-`python train_student.py --model_name wavenet_gaussian_student --teacher_name wavenet_gaussian --teacher_load_step 10000 --batch_size 4 --num_blocks_t 4 --num_layers_t 6 --num_layers_s 6 --KL_type qp`
 
 `python3 train_student.py --model_name maestro_student --teacher_name maestro --teacher_load_step CHECKPOINT --batch_size 4 --num_blocks_t 4 --num_layers_t 6 --num_layers_s 6 --KL_type qp --data_path DATASETS/maestro/ --sample_path samples/ --save params/ --load params/ --loss loss/maestro --log log/maestro`
 
