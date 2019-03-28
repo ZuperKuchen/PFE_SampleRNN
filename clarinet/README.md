@@ -33,7 +33,7 @@ $ conda install -c roebel mido `
 
 #### Step 1. Create Dataset
 
-- The dataset directory must contains 2 directories (wav/ and midi/) with the filenames respectively in format [name].mid and [name].wav. For the Maestro_bach dataset download [here](https://drive.google.com/drive/folders/1sLqewIgdb93bNQqtPephimBznJCujdN1)
+- The dataset directory must contain 2 directories (wav/ and midi/) which contain files respectively named in format [name].mid and [name].wav. For the Maestro_bach dataset download [here](https://drive.google.com/drive/folders/1sLqewIgdb93bNQqtPephimBznJCujdN1)
 - To cut the dataset into small tracks (about 5s each): `python dataset.py [wav_dir] [midi_dir]` 
 - To create the corresponding metadata.csv file (in_dir is the directory where the midi/ and wav/ directories are stored ie: maestro): `python3 create_csv.py --in_dir [in_dir]`
 
