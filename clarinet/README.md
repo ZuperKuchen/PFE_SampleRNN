@@ -84,7 +84,7 @@ Original code from [Sungwon Kim](https://github.com/ksw0306) --> [HERE](https://
 
 `--temp TEMPERATURE` : Temperature (standard deviation) value implemented as z ~ N(0, 1 * TEMPERATURE)
 
-`python synthesize_student.py --model_name maestro_student --load_step CHECKPOINT --teacher_name maestro --teacher_load_step CHECKPOINT --batch_size 4 --temp 0.7 --load params/`
+`python synthesize_student.py --model_name maestro_student --load_step CHECKPOINT --teacher_name maestro --teacher_load_step CHECKPOINT --temp 0.7 --load params/`
 
 # References
 
