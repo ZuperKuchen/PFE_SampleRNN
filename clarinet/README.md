@@ -16,7 +16,7 @@ Original code from [Sungwon Kim](https://github.com/ksw0306) --> [ClariNet](http
 - py-midi                       1.2.5    
 
 # Installation
-- Install anaconda3 : https://www.anaconda.com/distribution/#download-section choose command line installer for python 3.7 then run the script and follow the instruction
+- Install anaconda3 : https://www.anaconda.com/distribution/#download-section choose command line installer for python 3.7 then run the script and follow the instructions
 - create and set up a pytorch conda environment :
 -`$ conda create --name pytorch   
 $ source activate pytorch
@@ -35,7 +35,7 @@ $ conda install -c roebel mido `
 
 - The dataset directory must contains 2 directories (wav/ and midi/) with the filenames respectively in format [name].mid and [name].wav. For the Maestro_bach dataset download [here](https://drive.google.com/drive/folders/1sLqewIgdb93bNQqtPephimBznJCujdN1)
 - To cut the dataset into small tracks (about 5s each): `python dataset.py [wav_dir] [midi_dir]` 
-- To create the corresponding metadata.csv file (in_dir is the directory where the midi/ and wav/ directories are strored ie: maestro): `python3 create_csv.py --in_dir [in_dir]`
+- To create the corresponding metadata.csv file (in_dir is the directory where the midi/ and wav/ directories are stored ie: maestro): `python3 create_csv.py --in_dir [in_dir]`
 
 #### Step 2. Preprocessing (Preparing Mel Spectrogram)
 
@@ -73,7 +73,7 @@ $ conda install -c roebel mido `
 
 `--teacher_load_step CHECKPOINT` :  the # of the pre-trained *teacher* model's global training step (also depicted in the trained weight file)
 
-`--KL_type qp` : Reversed KL divegence KL(q||p)  or `--KL_type pq` : Forward KL divergence KL(p||q)
+`--KL_type qp` : Reversed KL divergence KL(q||p)  or `--KL_type pq` : Forward KL divergence KL(p||q)
 
 `--temp TEMPERATURE` : Temperature (standard deviation) value implemented as z ~ N(0, 1 * TEMPERATURE)
 
