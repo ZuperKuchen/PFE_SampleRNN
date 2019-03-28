@@ -6,14 +6,14 @@ Original code from [Sungwon Kim](https://github.com/ksw0306) --> [ClariNet](http
 
 # Requirements
 
-PyTorch                       0.4.0
-Python                        3.6 
-Librosa                       0.6.3
-anaconda                      2018.12                  
-pretty_midi                   0.2.8
-mido			      1.2.8
-matplotlib                    2.2.3  
-py-midi                       1.2.5    
+- PyTorch                       0.4.0
+- Python                        3.6 
+- Librosa                       0.6.3
+- anaconda                      2018.12                  
+- pretty_midi                   0.2.8
+- mido			      1.2.8
+- matplotlib                    2.2.3  
+- py-midi                       1.2.5    
 
 # Installation
 - Install anaconda3 : https://www.anaconda.com/distribution/#download-section choose command line installer for python 3.7 then run the script and follow the instruction
@@ -26,20 +26,20 @@ $ conda update -n base -c defaults conda
 $ conda install -c conda-forge librosa
 $ conda update librosa
 $ conda install -c roebel pretty_midi
-$ conda install -c roebel mido 
+$ conda install -c roebel mido `
 
 
 # Examples (with maestro_bach dataset)
 
 #### Step 1. Create Dataset
 
-- The dataset directory must contains 2 directories (wav/ and midi/) with the filenames respectively in format [name].mid and [name].wav for maestro download [here](https://drive.google.com/drive/folders/1sLqewIgdb93bNQqtPephimBznJCujdN1)
+- The dataset directory must contains 2 directories (wav/ and midi/) with the filenames respectively in format [name].mid and [name].wav. For the Maestro_bach dataset download [here](https://drive.google.com/drive/folders/1sLqewIgdb93bNQqtPephimBznJCujdN1)
 - To cut the dataset into small tracks (about 5s each): `python dataset.py [wav_dir] [midi_dir]` 
-- To create the corresponding metadata.csv file (in_dir is the directory where the midi/ and wav/ directories are strored): `python3 create_csv.py --in_dir [in_dir]`
+- To create the corresponding metadata.csv file (in_dir is the directory where the midi/ and wav/ directories are strored ie: maestro): `python3 create_csv.py --in_dir [in_dir]`
 
 #### Step 2. Preprocessing (Preparing Mel Spectrogram)
 
-`python preprocessing.py --in_dir  [in_dir] --out_dir DATASETS/[name] --`
+`python preprocessing.py --in_dir  maestro --out_dir DATASETS/maestro --name maestro`
 
 #### Step 3. Train Gaussian Autoregressive WaveNet (Teacher)
 
