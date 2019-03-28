@@ -1,6 +1,8 @@
 # ClariNet
 A Pytorch Implementation of ClariNet (Mel Spectrogram --> Waveform)
 
+Original code from [Sungwon Kim](https://github.com/ksw0306) --> [ClariNet](https://github.com/ksw0306/ClariNet)
+
 
 # Requirements
 
@@ -27,27 +29,27 @@ $ conda install -c roebel pretty_midi
 $ conda install -c roebel mido 
 
 
-# Examples
+# Examples (with maestro_bach dataset)
 
-#### Step 1. Download Dataset
+#### Step 1. Create Dataset
 
-- LJSpeech : [https://keithito.com/LJ-Speech-Dataset/](https://keithito.com/LJ-Speech-Dataset/)
+-The dataset directory must contains 2 directories (wav/ and midi/) with the filenames respectively in format [name].mid and [name].wav for maestro download [here](https://drive.google.com/drive/folders/1sLqewIgdb93bNQqtPephimBznJCujdN1)
+-To cut the dataset into small tracks (about 5s each): `python dataset.py [wav_dir] [midi_dir]` 
+-To create the corresponding metadata.csv file (in_dir is the directory where the midi/ and wav/ directories are strored): `python3 create_csv.py --in_dir [in_dir]`
 
 #### Step 2. Preprocessing (Preparing Mel Spectrogram)
 
-`python preprocessing.py --in_dir ljspeech --out_dir DATASETS/ljspeech`
+`python preprocessing.py --in_dir  [in_dir] --out_dir DATASETS/[name] --`
 
 #### Step 3. Train Gaussian Autoregressive WaveNet (Teacher)
 
-`$ python train.py --model_name wavenet_gaussian --batch_size 8 --num_blocks 4 --num_layers 6
-
-`
+`python3 train.py --data_path ./DATASETS/maestro/ --save ./params/ --loss loss/maestro --log log/maestro --model_name maestro`
 
 #### Step 4. Synthesize (Teacher)
 
 `--load_step CHECKPOINT` : the # of the pre-trained *teacher* model's global training step (also depicted in the trained weight file)
 
-`python synthesize.py --model_name wavenet_gaussian --num_blocks 4 --num_layers 6 --load_step 10000`
+`python3 synthesize.py --model_name maestro --num_blocks 4 --num_layers 6 --load_step CHECKPOINT --data_path DATASETS/maestro/ --sample_path samples/ --load params/ `
 
 #### Step 5. Train Gaussian Inverse Autoregressive Flow (Student)
 
@@ -58,6 +60,8 @@ $ conda install -c roebel mido
 `--KL_type qp` : Reversed KL divegence KL(q||p)  or `--KL_type pq` : Forward KL divergence KL(p||q)
 
 `python train_student.py --model_name wavenet_gaussian_student --teacher_name wavenet_gaussian --teacher_load_step 10000 --batch_size 4 --num_blocks_t 4 --num_layers_t 6 --num_layers_s 6 --KL_type qp`
+
+`python3 train_student.py --model_name maestro_student --teacher_name maestro --teacher_load_step CHECKPOINT --batch_size 4 --num_blocks_t 4 --num_layers_t 6 --num_layers_s 6 --KL_type qp --data_path DATASETS/maestro/ --sample_path samples/ --save params/ --load params/ --loss loss/maestro --log log/maestro`
 
 #### Step 6. Synthesize (Student)
 
@@ -73,9 +77,10 @@ $ conda install -c roebel mido
 
 `--temp TEMPERATURE` : Temperature (standard deviation) value implemented as z ~ N(0, 1 * TEMPERATURE)
 
-`python synthesize_student.py --model_name wavenet_gaussian_student --load_step 10000 --teacher_name wavenet_gaussian --teacher_load_step 10000 --batch_size 4 --num_blocks_t 4 --num_layers_t 6 --num_layers_s 6 --num_blocks_t 4 --num_layers_t 6 --num_layers_s 6 --num_samples 5 --temp 0.7`
+`python synthesize_student.py --model_name maestro_student --load_step CHECKPOINT --teacher_name maestro --teacher_load_step CHECKPOINT --batch_size 4 --temp 0.7 --load params/`
 
 # References
 
-- WaveNet vocoder : [https://github.com/r9y9/wavenet_vocoder](https://github.com/r9y9/wavenet_vocoder)
+
 - ClariNet : [https://arxiv.org/abs/1807.07281](https://arxiv.org/abs/1807.07281)
+- Clarinet implementation : [https://github.com/ksw0306/ClariNet]
