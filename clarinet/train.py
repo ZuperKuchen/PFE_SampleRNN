@@ -66,6 +66,7 @@ device = torch.device("cuda" if use_cuda else "cpu")
 train_dataset = essen30Dataset(args.data_path, True, 0.1)
 test_dataset = essen30Dataset(args.data_path, False, 0.1)
 
+
 train_loader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True, collate_fn=collate_fn,
                           num_workers=args.num_workers, pin_memory=True)
 test_loader = DataLoader(test_dataset, batch_size=args.batch_size, collate_fn=collate_fn,
@@ -219,6 +220,7 @@ model = build_model()
 model.to(device)
 
 optimizer = optim.Adam(model.parameters(), lr=args.learning_rate)
+# optimizer = optim.Adamax(model.parameters(), lr=args.learning_rate)
 criterion = GaussianLoss()
 
 ema = ExponentialMovingAverage(args.ema_decay)

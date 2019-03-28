@@ -134,7 +134,7 @@ def write_metadata(metadata, out_dir):
         for m in metadata:
             f.write('|'.join([str(x) for x in m]) + '\n')
     frames = sum([m[2] for m in metadata])
-    sr = 22050
+    sr = 44100 ###
     hours = frames / sr / 3600
     print('Wrote %d utterances, %d time steps (%.2f hours)' % (len(metadata), frames, hours))
     print('Max input length:  %d' % max(len(m[3]) for m in metadata))
