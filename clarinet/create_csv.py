@@ -3,7 +3,7 @@ import numpy as np
 import os
 import pandas as pd
 
-#this script create a csv file corresponding to the data linked in. The format is one column for midi, one column for wav. 
+#this script create a csv file corresponding to the data linked in. The format is one column for midi, one column for wav.
 
 if __name__ == "__main__":
 
@@ -26,7 +26,6 @@ if __name__ == "__main__":
 
             midi.append(midi_file)
 
-            # wav_file = args.wav_dir + raw_name + '.wav'
             wav_file = raw_name + '.wav'
 
             wav.append(wav_file)

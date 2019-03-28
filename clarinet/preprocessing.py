@@ -11,7 +11,6 @@ import time
 # this code is adapted from: https://github.com/ksw0306/ClariNet.git
 #create mel spectrogram and convert midi and wav files from the dataset to numpy array.
 
-
 def midi2wav(midi_path):
     #remove the .mid or .midi extension
     (filename, ext) = os.path.splitext(midi_path)
@@ -44,13 +43,12 @@ def build_from_path(in_dir, out_dir, dataset_name, num_workers=1): #split metada
             futures.append(executor.submit(
                 partial(_process_utterance, out_dir, index, wav_path, midi_path, dataset_name))) #modified
             index += 1
-    print(midi_path + " , " + wav_path)
     return [future.result() for future in futures]
 
 
-def _process_utterance(out_dir, index, wav_path, midi_path, dataset_name): #compute mel spectrogram for corresponding wav, do something after ?, write spectrogram and return audio_filename, mel_filename, timesteps, text. 
+def _process_utterance(out_dir, index, wav_path, midi_path, dataset_name): #compute mel spectrogram for corresponding wav, do something after ?, write spectrogram and return audio_filename, mel_filename, timesteps, text.
     # Load the audio to a numpy array:
-    wav, sr = librosa.load(wav_path, sr=44100) #TODO sr = 44100 ?
+    wav, sr = librosa.load(wav_path, sr=44100)
 
 
     # Load the audio from the midi to a numpy array
@@ -70,7 +68,6 @@ def _process_utterance(out_dir, index, wav_path, midi_path, dataset_name): #comp
     hop_length = 256
     reference = 20.0
     min_db = -100
-    #TODO compute fmax according to sr ?
 
     # Compute a mel-scale spectrogram from the trimmed wav:
     # (N, D)
@@ -115,7 +112,6 @@ def _process_utterance(out_dir, index, wav_path, midi_path, dataset_name): #comp
     np.save(os.path.join(out_dir, mel_filename),
             mel_spectrogram.astype(np.float32), allow_pickle=False)
 
-    ## TODO: something to the .mid file ( midi_path)? # TODO: be sure to open the corresponding midi/wav files
     midi_data = pretty_midi.PrettyMIDI(midi_path)
 
     midi_numpy = midi_data.get_piano_roll() #Added
